@@ -40,7 +40,6 @@ describe('WeatherController', () => {
 
     mockWeatherService.getCurrentWeather.mockResolvedValue(weather);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const result = await controller.getWeather(city);
     expect(result).toEqual(weather);
     expect(mockWeatherService.getCurrentWeather).toHaveBeenCalledWith(city);
