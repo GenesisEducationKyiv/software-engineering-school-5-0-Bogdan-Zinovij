@@ -89,7 +89,7 @@
 
 ## Схема компонентів системи
 
-![sdd-schema](../assets/images/sdd-schema.png)
+![sdd-schema](./assets/images/sdd-schema.png)
 
 ## Стек технологій
 
