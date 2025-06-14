@@ -10,6 +10,7 @@ import { WeatherModule } from 'src/weather/weather.module';
 import { SubscriptionCronService } from './application/cron/subscription.cron';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenModule } from 'src/token/token.module';
+import { SubscriptionNotificationService } from './application/notification/subscription-notification.service';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { TokenModule } from 'src/token/token.module';
   providers: [
     SubscriptionService,
     SubscriptionCronService,
+    SubscriptionNotificationService,
     {
       provide: 'SubscriptionRepository',
       useClass: TypeOrmSubscriptionRepository,
