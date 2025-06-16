@@ -45,4 +45,4 @@ jobs:
 
       - name: Remove containers
         if: always()
-        run: docker-compose -f docker-compose.test.yml down --volumes --remove-orphans
+        run: docker compose -f docker-compose.test.yml down --volumes --remove-orphans
