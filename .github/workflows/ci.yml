@@ -42,7 +42,3 @@ jobs:
 
       - name: Run integration tests
         run: npm run test:integration:docker
-
-      - name: Remove containers
-        if: always()
-        run: docker compose -f docker-compose.test.yml down --volumes --remove-orphans
