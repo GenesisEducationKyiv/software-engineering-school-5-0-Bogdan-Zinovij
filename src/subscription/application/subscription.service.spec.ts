@@ -2,7 +2,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SubscriptionService } from './subscription.service';
 import { WeatherService } from 'src/weather/application/weather.service';
-import { ConfigService } from '@nestjs/config';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
 import { TokenService } from 'src/token/application/token.service';
@@ -51,14 +50,6 @@ describe('SubscriptionService', () => {
             sendWeatherUpdate: jest.fn(),
           },
         },
-        {
-          provide: ConfigService,
-          useValue: {
-            get: jest.fn((key: string) =>
-              key === 'APP_PORT' ? '3000' : 'localhost',
-            ),
-          },
-        },
       ],
     }).compile();
 
@@ -87,12 +78,10 @@ describe('SubscriptionService', () => {
       frequency: SubscriptionFrequencyEnum.HOURLY,
     });
 
-    expect(notificationService.sendConfirmationEmail).toHaveBeenCalledWith(
-      'test@mail.com',
-      'abc',
-      'localhost',
-      '3000',
-    );
+    expect(notificationService.sendConfirmationEmail).toHaveBeenCalledWith({
+      email: 'test@mail.com',
+      token: 'abc',
+    });
   });
 
   it('should confirm subscription and send confirmation message with weather', async () => {
@@ -118,26 +107,24 @@ describe('SubscriptionService', () => {
       confirmed: true,
       tokenId: 'token-id',
     });
-    weatherService.getCurrentWeather.mockResolvedValue({
+    const mockWeather = {
       temperature: 18,
       humidity: 40,
       description: 'Sunny',
-    });
+    };
+    weatherService.getCurrentWeather.mockResolvedValue(mockWeather);
 
     const result = await service.confirm('abc');
 
     expect(result.confirmed).toBe(true);
     expect(
       notificationService.sendSubscriptionConfirmedEmail,
-    ).toHaveBeenCalledWith(
-      'test@mail.com',
-      SubscriptionFrequencyEnum.HOURLY,
-      'Kyiv',
-      { temperature: 18, humidity: 40, description: 'Sunny' },
-      'abc',
-      'localhost',
-      '3000',
-    );
+    ).toHaveBeenCalledWith('test@mail.com', {
+      frequency: SubscriptionFrequencyEnum.HOURLY,
+      city: 'Kyiv',
+      weather: mockWeather,
+      token: 'abc',
+    });
   });
 
   it('should unsubscribe a user and send success email', async () => {
@@ -159,12 +146,19 @@ describe('SubscriptionService', () => {
     await service.unsubscribe('abc');
 
     expect(repo.remove).toHaveBeenCalledWith('1');
+    expect(tokenService.remove).toHaveBeenCalledWith('token-id');
     expect(notificationService.sendUnsubscribeSuccess).toHaveBeenCalledWith(
       'test@mail.com',
     );
   });
 
   it('should send weather updates to subscribers', async () => {
+    const mockWeather = {
+      temperature: 20,
+      humidity: 50,
+      description: 'Clear',
+    };
+
     repo.find.mockResolvedValue([
       new Subscription(
         '1',
@@ -175,22 +169,16 @@ describe('SubscriptionService', () => {
         'token-id',
       ),
     ]);
-    weatherService.getCurrentWeather.mockResolvedValue({
-      temperature: 20,
-      humidity: 50,
-      description: 'Clear',
-    });
+    weatherService.getCurrentWeather.mockResolvedValue(mockWeather);
     tokenService.findById.mockResolvedValue({ id: 'token-id', value: 'abc' });
 
     await service.sendWeatherToSubscribers(SubscriptionFrequencyEnum.HOURLY);
 
-    expect(notificationService.sendWeatherUpdate).toHaveBeenCalledWith(
-      'test@mail.com',
-      'Kyiv',
-      { temperature: 20, humidity: 50, description: 'Clear' },
-      'abc',
-      'localhost',
-      '3000',
-    );
+    expect(notificationService.sendWeatherUpdate).toHaveBeenCalledWith({
+      email: 'test@mail.com',
+      city: 'Kyiv',
+      weather: mockWeather,
+      token: 'abc',
+    });
   });
 });

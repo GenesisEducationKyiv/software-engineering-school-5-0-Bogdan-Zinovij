@@ -1,30 +1,40 @@
 import { Injectable } from '@nestjs/common';
 import { MailService } from 'src/mail/application/mail.service';
 import { MailTemplates } from 'src/mail/constants/mail.templates';
-import { Weather } from 'src/weather/domain/weather.model';
 import { SubscriptionEmailLinkHelper } from './subscription-email-link.helper';
-import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
+import { ConfirmationEmailDto } from './dto/confirmation-email.dto';
+import { SubscriptionConfirmedEmailDto } from './dto/subscription-confirmed-email.dto';
+import { WeatherUpdateEmailDto } from './dto/weather-update-email.dto';
 
 @Injectable()
 export class SubscriptionNotificationService {
   constructor(private readonly mailService: MailService) {}
 
-  async sendConfirmationEmail(
-    email: string,
-    token: string,
-    domain: string,
-    port: string,
-  ): Promise<void> {
-    const confirmLink = SubscriptionEmailLinkHelper.getConfirmLink(
-      domain,
-      port,
-      token,
-    );
+  async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
+    const confirmLink = SubscriptionEmailLinkHelper.getConfirmLink(data.token);
+    await this.mailService.sendMail({
+      receiverEmail: data.email,
+      subject: MailTemplates.CONFIRM_SUBSCRIPTION.subject,
+      html: MailTemplates.CONFIRM_SUBSCRIPTION.html(confirmLink, data.token),
+    });
+  }
 
+  async sendSubscriptionConfirmedEmail(
+    email: string,
+    data: SubscriptionConfirmedEmailDto,
+  ): Promise<void> {
+    const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
+      data.token,
+    );
     await this.mailService.sendMail({
       receiverEmail: email,
-      subject: MailTemplates.CONFIRM_SUBSCRIPTION.subject,
-      html: MailTemplates.CONFIRM_SUBSCRIPTION.html(confirmLink, token),
+      subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
+      html: MailTemplates.SUBSCRIPTION_CONFIRMED.html(
+        data.frequency,
+        data.city,
+        data.weather,
+        unsubscribeLink,
+      ),
     });
   }
 
@@ -36,51 +46,18 @@ export class SubscriptionNotificationService {
     });
   }
 
-  async sendSubscriptionConfirmedEmail(
-    email: string,
-    frequency: SubscriptionFrequencyEnum,
-    city: string,
-    weather: Weather,
-    token: string,
-    domain: string,
-    port: string,
-  ): Promise<void> {
+  async sendWeatherUpdate(data: WeatherUpdateEmailDto): Promise<void> {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
-      domain,
-      port,
-      token,
+      data.token,
     );
-
     await this.mailService.sendMail({
-      receiverEmail: email,
-      subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
-      html: MailTemplates.SUBSCRIPTION_CONFIRMED.html(
-        frequency,
-        city,
-        weather,
+      receiverEmail: data.email,
+      subject: MailTemplates.WEATHER_UPDATE.subject(data.city),
+      html: MailTemplates.WEATHER_UPDATE.html(
+        data.city,
+        data.weather,
         unsubscribeLink,
       ),
-    });
-  }
-
-  async sendWeatherUpdate(
-    email: string,
-    city: string,
-    weather: Weather,
-    token: string,
-    domain: string,
-    port: string,
-  ): Promise<void> {
-    const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
-      domain,
-      port,
-      token,
-    );
-
-    await this.mailService.sendMail({
-      receiverEmail: email,
-      subject: MailTemplates.WEATHER_UPDATE.subject(city),
-      html: MailTemplates.WEATHER_UPDATE.html(city, weather, unsubscribeLink),
     });
   }
 }

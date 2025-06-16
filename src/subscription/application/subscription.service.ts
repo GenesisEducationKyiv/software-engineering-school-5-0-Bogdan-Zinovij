@@ -7,26 +7,17 @@ import { Weather } from 'src/weather/domain/weather.model';
 import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
-import { ConfigService } from '@nestjs/config';
 import { SubscriptionNotificationService } from './notification/subscription-notification.service';
 
 @Injectable()
 export class SubscriptionService {
-  private readonly appPort: string;
-  private readonly appDomain: string;
-
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherService,
     private readonly notificationService: SubscriptionNotificationService,
-    private readonly configService: ConfigService,
-  ) {
-    this.appPort = this.configService.get<string>('APP_PORT') ?? '3000';
-    this.appDomain =
-      this.configService.get<string>('APP_DOMAIN') ?? 'localhost';
-  }
+  ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
     const existing = await this.subscriptionRepository.find({
@@ -48,12 +39,10 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.notificationService.sendConfirmationEmail(
-      subscription.email,
-      token.value,
-      this.appDomain,
-      this.appPort,
-    );
+    await this.notificationService.sendConfirmationEmail({
+      email: subscription.email,
+      token: token.value,
+    });
 
     return subscription;
   }
@@ -70,9 +59,7 @@ export class SubscriptionService {
     if (!subscription.confirmed) {
       subscription = (await this.subscriptionRepository.update(
         subscription.id,
-        {
-          confirmed: true,
-        },
+        { confirmed: true },
       )) as Subscription;
     }
 
@@ -82,12 +69,12 @@ export class SubscriptionService {
 
     await this.notificationService.sendSubscriptionConfirmedEmail(
       subscription.email,
-      subscription.frequency,
-      subscription.city,
-      weather,
-      token.value,
-      this.appDomain,
-      this.appPort,
+      {
+        frequency: subscription.frequency,
+        city: subscription.city,
+        weather,
+        token: token.value,
+      },
     );
 
     return subscription;
@@ -137,14 +124,12 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationService.sendWeatherUpdate(
-          sub.email,
-          sub.city,
+        await this.notificationService.sendWeatherUpdate({
+          email: sub.email,
+          city: sub.city,
           weather,
-          token.value,
-          this.appDomain,
-          this.appPort,
-        );
+          token: token.value,
+        });
       } catch (err) {
         console.error(`Failed to send weather to ${sub.email}:`, err);
       }
