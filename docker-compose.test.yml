@@ -1,0 +1,38 @@
+version: '3.9'
+services:
+  postgres-test:
+    image: postgres:15
+    ports:
+      - '5433:5432'
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app-test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    environment:
+      POSTGRES_HOST: postgres-test
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+      WEATHER_API_KEY: test_key
+      SMTP_HOST: test.smtp.com
+      SMTP_PORT: 1025
+      SMTP_USER: test
+      SMTP_PASSWORD: test
+      APP_PORT: 3001
+    depends_on:
+      - postgres-test
+    ports:
+      - '3001:3000'
+    volumes:
+      - ./:/app
+
+volumes:
+  pgdata:
