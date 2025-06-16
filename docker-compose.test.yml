@@ -1,14 +1,12 @@
-env_file: .env.test
-
 services:
   postgres-test:
     image: postgres:15
     ports:
-      - '${POSTGRES_PORT}:${POSTGRES_PORT_INTERNAL:-5432}'
+      - '5433:5432'
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -17,21 +15,21 @@ services:
       context: .
       dockerfile: Dockerfile.test
     environment:
-      POSTGRES_HOST: ${POSTGRES_HOST}
-      POSTGRES_PORT: ${POSTGRES_PORT_INTERNAL:-5432}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
-      WEATHER_API_KEY: ${WEATHER_API_KEY}
-      SMTP_HOST: ${SMTP_HOST}
-      SMTP_PORT: ${SMTP_PORT}
-      SMTP_USER: ${SMTP_USER}
-      SMTP_PASSWORD: ${SMTP_PASSWORD}
-      APP_PORT: ${APP_PORT}
+      POSTGRES_HOST: postgres-test
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: test_db
+      WEATHER_API_KEY: test_key
+      SMTP_HOST: test.smtp.com
+      SMTP_PORT: 1025
+      SMTP_USER: test
+      SMTP_PASSWORD: test
+      APP_PORT: 3001
     depends_on:
       - postgres-test
     ports:
-      - '${APP_PORT}:3000'
+      - '3001:3000'
     volumes:
       - ./:/app
     command: >
