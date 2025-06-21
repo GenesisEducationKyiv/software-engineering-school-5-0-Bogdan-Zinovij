@@ -33,6 +33,19 @@ export class AppConfigService {
     return { baseUrl, apiKey };
   }
 
+  getOpenWeatherMapConfig() {
+    const baseUrl = process.env.OPENWEATHER_API_BASE_URL;
+    const apiKey = process.env.OPENWEATHER_API_KEY;
+
+    if (!baseUrl || !apiKey) {
+      throw new Error(
+        'Missing OPENWEATHER_API_BASE_URL or OPENWEATHER_API_KEY in environment',
+      );
+    }
+
+    return { baseUrl, apiKey };
+  }
+
   getMailerConfig(): MailerOptions {
     return {
       transport: {
