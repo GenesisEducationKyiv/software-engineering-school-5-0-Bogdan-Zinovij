@@ -1,22 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { WeatherProvider } from '../domain/interfaces/weather-provider.interface';
 import { WeatherData } from '../domain/types/weather-data.type';
+import { WeatherProviderChain } from './weather-provider-chain';
 
 @Injectable()
 export class WeatherClient {
-  constructor(private readonly providers: WeatherProvider[]) {}
+  private readonly chain: WeatherProviderChain;
 
-  async getWeather(city: string): Promise<WeatherData> {
-    console.log(this.providers);
-    for (const provider of this.providers) {
-      try {
-        return provider.getWeather(city);
-      } catch (error) {
-        console.log(error);
-        continue;
-      }
-    }
+  constructor(providers: WeatherProvider[]) {
+    this.chain = new WeatherProviderChain(providers);
+  }
 
-    throw new Error('All weather providers failed');
+  getWeather(city: string): Promise<WeatherData> {
+    return this.chain.getWeather(city);
   }
 }
