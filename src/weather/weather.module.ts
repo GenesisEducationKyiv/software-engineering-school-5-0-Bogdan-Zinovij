@@ -8,6 +8,7 @@ import { WeatherClient } from './application/weather-client';
 import { WeatherProvider } from './domain/interfaces/weather-provider.interface';
 import { WeatherApiProvider } from './infrastructure/providers/weatherapi.provider';
 import { OpenWeatherMapProvider } from './infrastructure/providers/openweathermap.provider';
+import { WeatherProviderConfig } from './domain/types/weather-provider-config.type';
 
 @Module({
   imports: [HttpModule, ConfigModule],
@@ -15,34 +16,25 @@ import { OpenWeatherMapProvider } from './infrastructure/providers/openweatherma
   providers: [
     WeatherService,
     AppConfigService,
-    WeatherClient,
     WeatherApiProvider,
     OpenWeatherMapProvider,
+
+    // Weather providers configs
     {
       provide: 'WEATHER_API_CONFIG',
-      useFactory: () => {
-        const baseUrl = process.env.WEATHER_API_BASE_URL;
-        const apiKey = process.env.WEATHER_API_KEY;
-        if (!baseUrl || !apiKey) {
-          throw new Error('Missing WEATHER_API_BASE_URL or WEATHER_API_KEY');
-        }
-        return { baseUrl, apiKey };
-      },
+      useFactory: (config: AppConfigService): WeatherProviderConfig =>
+        config.getWeatherApiConfig(),
+      inject: [AppConfigService],
     },
 
     {
       provide: 'OPENWEATHER_API_CONFIG',
-      useFactory: () => {
-        const baseUrl = process.env.OPENWEATHER_API_BASE_URL;
-        const apiKey = process.env.OPENWEATHER_API_KEY;
-        if (!baseUrl || !apiKey) {
-          throw new Error(
-            'Missing OPENWEATHER_API_BASE_URL or OPENWEATHER_API_KEY',
-          );
-        }
-        return { baseUrl, apiKey };
-      },
+      useFactory: (config: AppConfigService): WeatherProviderConfig =>
+        config.getOpenWeatherMapConfig(),
+      inject: [AppConfigService],
     },
+
+    // WEATHER_PROVIDERS
     {
       provide: 'WEATHER_PROVIDERS',
       useFactory: (
@@ -51,6 +43,8 @@ import { OpenWeatherMapProvider } from './infrastructure/providers/openweatherma
       ) => [openWeather, weatherApi],
       inject: [OpenWeatherMapProvider, WeatherApiProvider],
     },
+
+    // WeatherClient
     {
       provide: WeatherClient,
       useFactory: (providers: WeatherProvider[]) =>

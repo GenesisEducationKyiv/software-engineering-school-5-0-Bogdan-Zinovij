@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { MailerOptions } from '@nestjs-modules/mailer';
+import { WeatherProviderConfig } from 'src/weather/domain/types/weather-provider-config.type';
 
 @Injectable()
 export class AppConfigService {
@@ -20,7 +21,7 @@ export class AppConfigService {
     };
   }
 
-  getWeatherApiConfig() {
+  getWeatherApiConfig(): WeatherProviderConfig {
     const baseUrl = process.env.WEATHER_API_BASE_URL;
     const apiKey = process.env.WEATHER_API_KEY;
 
@@ -33,7 +34,7 @@ export class AppConfigService {
     return { baseUrl, apiKey };
   }
 
-  getOpenWeatherMapConfig() {
+  getOpenWeatherMapConfig(): WeatherProviderConfig {
     const baseUrl = process.env.OPENWEATHER_API_BASE_URL;
     const apiKey = process.env.OPENWEATHER_API_KEY;
 
