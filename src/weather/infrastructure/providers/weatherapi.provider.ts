@@ -5,6 +5,7 @@ import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { WeatherApiResponse } from 'src/weather/infrastructure/providers/types/weatherapi-response.type';
+import { buildWeatherApiUrl } from '../helpers/weather-url.builder';
 
 @Injectable()
 export class WeatherApiProvider implements WeatherProvider {
@@ -15,7 +16,11 @@ export class WeatherApiProvider implements WeatherProvider {
   ) {}
 
   async getWeather(city: string): Promise<WeatherData> {
-    const url = `${this.config.baseUrl}?key=${this.config.apiKey}&q=${encodeURIComponent(city)}&aqi=no`;
+    const url = buildWeatherApiUrl(
+      this.config.baseUrl,
+      this.config.apiKey,
+      city,
+    );
 
     const response: AxiosResponse<WeatherApiResponse> = await lastValueFrom(
       this.httpService.get<WeatherApiResponse>(url),
