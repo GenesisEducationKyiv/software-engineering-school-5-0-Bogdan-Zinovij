@@ -4,16 +4,7 @@ import { WeatherData } from 'src/weather/domain/types/weather-data.type';
 import { HttpService } from '@nestjs/axios';
 import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
-
-interface OpenWeatherMapResponse {
-  main: {
-    temp: number;
-    humidity: number;
-  };
-  weather: {
-    description: string;
-  }[];
-}
+import { OpenWeatherMapResponse } from 'src/weather/infrastructure/providers/types/openweathermap-response.type';
 
 @Injectable()
 export class OpenWeatherMapProvider implements WeatherProvider {
