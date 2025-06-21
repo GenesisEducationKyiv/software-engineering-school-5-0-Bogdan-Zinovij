@@ -1,8 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { WeatherProvider } from '../../domain/interfaces/weather-provider.interface';
 import { WeatherData } from 'src/weather/domain/types/weather-data.type';
 import { HttpService } from '@nestjs/axios';
-import { AppConfigService } from 'src/config/app-config.service';
 import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
 
@@ -18,20 +17,14 @@ interface OpenWeatherMapResponse {
 
 @Injectable()
 export class OpenWeatherMapProvider implements WeatherProvider {
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
-
   constructor(
     private readonly httpService: HttpService,
-    private readonly appConfigService: AppConfigService,
-  ) {
-    const { baseUrl, apiKey } = this.appConfigService.getOpenWeatherMapConfig();
-    this.baseUrl = baseUrl;
-    this.apiKey = apiKey;
-  }
+    @Inject('OPENWEATHER_API_CONFIG')
+    private readonly config: { baseUrl: string; apiKey: string },
+  ) {}
 
   async getWeather(city: string): Promise<WeatherData> {
-    const url = `${this.baseUrl}?q=${encodeURIComponent(city)}&appid=${this.apiKey}&units=metric`;
+    const url = `${this.config.baseUrl}?q=${encodeURIComponent(city)}&appid=${this.config.apiKey}&units=metric`;
 
     const response: AxiosResponse<OpenWeatherMapResponse> = await lastValueFrom(
       this.httpService.get<OpenWeatherMapResponse>(url),

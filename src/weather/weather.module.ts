@@ -19,6 +19,31 @@ import { OpenWeatherMapProvider } from './infrastructure/providers/openweatherma
     WeatherApiProvider,
     OpenWeatherMapProvider,
     {
+      provide: 'WEATHER_API_CONFIG',
+      useFactory: () => {
+        const baseUrl = process.env.WEATHER_API_BASE_URL;
+        const apiKey = process.env.WEATHER_API_KEY;
+        if (!baseUrl || !apiKey) {
+          throw new Error('Missing WEATHER_API_BASE_URL or WEATHER_API_KEY');
+        }
+        return { baseUrl, apiKey };
+      },
+    },
+
+    {
+      provide: 'OPENWEATHER_API_CONFIG',
+      useFactory: () => {
+        const baseUrl = process.env.OPENWEATHER_API_BASE_URL;
+        const apiKey = process.env.OPENWEATHER_API_KEY;
+        if (!baseUrl || !apiKey) {
+          throw new Error(
+            'Missing OPENWEATHER_API_BASE_URL or OPENWEATHER_API_KEY',
+          );
+        }
+        return { baseUrl, apiKey };
+      },
+    },
+    {
       provide: 'WEATHER_PROVIDERS',
       useFactory: (
         openWeather: OpenWeatherMapProvider,
