@@ -9,6 +9,7 @@ import { WeatherProvider } from './domain/interfaces/weather-provider.interface'
 import { WeatherApiProvider } from './infrastructure/providers/weatherapi.provider';
 import { OpenWeatherMapProvider } from './infrastructure/providers/openweathermap.provider';
 import { WeatherProviderConfig } from './domain/types/weather-provider-config.type';
+import { WeatherLogger } from './infrastructure/logger/weather.logger';
 
 @Module({
   imports: [HttpModule, ConfigModule],
@@ -18,6 +19,7 @@ import { WeatherProviderConfig } from './domain/types/weather-provider-config.ty
     AppConfigService,
     WeatherApiProvider,
     OpenWeatherMapProvider,
+    WeatherLogger,
 
     // Weather providers configs
     {
