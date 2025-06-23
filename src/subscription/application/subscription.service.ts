@@ -2,32 +2,22 @@ import { Injectable, Inject } from '@nestjs/common';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
 import { Subscription } from '../domain/subscription.model';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
-import { MailService } from 'src/mail/application/mail.service';
 import { WeatherService } from 'src/weather/application/weather.service';
 import { Weather } from 'src/weather/domain/weather.model';
 import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
-import { ConfigService } from '@nestjs/config';
-import { MailTemplates } from 'src/mail/constants/mail.templates';
+import { SubscriptionNotificationService } from './notification/subscription-notification.service';
 
 @Injectable()
 export class SubscriptionService {
-  private readonly appPort: string;
-  private readonly appDomain: string;
-
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
-    private readonly mailService: MailService,
     private readonly weatherService: WeatherService,
-    private readonly configService: ConfigService,
-  ) {
-    this.appPort = this.configService.get<string>('APP_PORT') ?? '3000';
-    this.appDomain =
-      this.configService.get<string>('APP_DOMAIN') ?? 'localhost';
-  }
+    private readonly notificationService: SubscriptionNotificationService,
+  ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
     const existing = await this.subscriptionRepository.find({
@@ -49,7 +39,11 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.sendConfirmationEmail(subscription.email, token.value);
+    await this.notificationService.sendConfirmationEmail({
+      email: subscription.email,
+      token: token.value,
+    });
+
     return subscription;
   }
 
@@ -65,27 +59,23 @@ export class SubscriptionService {
     if (!subscription.confirmed) {
       subscription = (await this.subscriptionRepository.update(
         subscription.id,
-        {
-          confirmed: true,
-        },
+        { confirmed: true },
       )) as Subscription;
     }
 
-    const unsubscribeLink = `http://${this.appDomain}:${this.appPort}/subscription/unsubscribe/${token.value}`;
     const weather = await this.weatherService.getCurrentWeather(
       subscription.city,
     );
 
-    await this.mailService.sendMail({
-      receiverEmail: subscription.email,
-      subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
-      html: MailTemplates.SUBSCRIPTION_CONFIRMED.html(
-        subscription.frequency,
-        subscription.city,
+    await this.notificationService.sendSubscriptionConfirmedEmail(
+      subscription.email,
+      {
+        frequency: subscription.frequency,
+        city: subscription.city,
         weather,
-        unsubscribeLink,
-      ),
-    });
+        token: token.value,
+      },
+    );
 
     return subscription;
   }
@@ -104,24 +94,8 @@ export class SubscriptionService {
     const subscription = subscriptions[0];
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
-    await this.mailService.sendMail({
-      receiverEmail: subscription.email,
-      subject: MailTemplates.UNSUBSCRIBE_SUCCESS.subject,
-      html: MailTemplates.UNSUBSCRIBE_SUCCESS.html(),
-    });
-  }
 
-  private async sendConfirmationEmail(
-    email: string,
-    token: string,
-  ): Promise<void> {
-    const confirmLink = `http://${this.appDomain}:${this.appPort}/subscription/confirm/${token}`;
-
-    await this.mailService.sendMail({
-      receiverEmail: email,
-      subject: MailTemplates.CONFIRM_SUBSCRIPTION.subject,
-      html: MailTemplates.CONFIRM_SUBSCRIPTION.html(confirmLink, token),
-    });
+    await this.notificationService.sendUnsubscribeSuccess(subscription.email);
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -149,16 +123,12 @@ export class SubscriptionService {
         }
 
         const token = await this.tokenService.findById(sub.tokenId);
-        const unsubscribeLink = `http://${this.appDomain}:${this.appPort}/subscription/unsubscribe/${token.value}`;
 
-        await this.mailService.sendMail({
-          receiverEmail: sub.email,
-          subject: MailTemplates.WEATHER_UPDATE.subject(sub.city),
-          html: MailTemplates.WEATHER_UPDATE.html(
-            sub.city,
-            weather,
-            unsubscribeLink,
-          ),
+        await this.notificationService.sendWeatherUpdate({
+          email: sub.email,
+          city: sub.city,
+          weather,
+          token: token.value,
         });
       } catch (err) {
         console.error(`Failed to send weather to ${sub.email}:`, err);
