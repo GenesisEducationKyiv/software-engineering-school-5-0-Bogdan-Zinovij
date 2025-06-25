@@ -5,14 +5,20 @@ export class WeatherProviderChain {
   constructor(private readonly providers: WeatherProvider[]) {}
 
   async getWeather(city: string): Promise<WeatherData> {
+    let lastError: unknown = null;
+
     for (const provider of this.providers) {
       try {
         return await provider.getWeather(city);
-      } catch {
-        continue;
+      } catch (error) {
+        lastError = error;
       }
     }
 
-    throw new Error('All weather providers failed');
+    if (lastError instanceof Error) {
+      throw lastError;
+    } else {
+      throw new Error('All weather providers failed');
+    }
   }
 }
