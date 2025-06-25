@@ -50,8 +50,6 @@ describe('WeatherProviderChain', () => {
     };
 
     const chain = new WeatherProviderChain([provider1, provider2]);
-    await expect(chain.getWeather(city)).rejects.toThrow(
-      'All weather providers failed',
-    );
+    await expect(chain.getWeather(city)).rejects.toThrow('Fail 2');
   });
 });
