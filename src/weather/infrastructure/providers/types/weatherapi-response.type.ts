@@ -1,4 +1,4 @@
-export interface WeatherApiResponse {
+export type WeatherApiResponse = {
   location: {
     name: string;
   };
@@ -9,4 +9,4 @@ export interface WeatherApiResponse {
       text: string;
     };
   };
-}
+};

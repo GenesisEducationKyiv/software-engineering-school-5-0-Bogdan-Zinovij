@@ -6,13 +6,17 @@ import { SubscriptionModule } from './subscription/subscription.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TokenModule } from './token/token.module';
+import { validationSchema } from './config/validation';
 
 @Module({
   imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema,
+    }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
-    ConfigModule.forRoot(),
     DatabaseModule,
     WeatherModule,
     SubscriptionModule,

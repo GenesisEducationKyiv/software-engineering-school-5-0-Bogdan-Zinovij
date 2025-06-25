@@ -1,17 +1,24 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { MailerOptions } from '@nestjs-modules/mailer';
+import { WeatherProviderConfig } from 'src/weather/domain/types/weather-provider-config.type';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppConfigService {
+  constructor(private readonly configService: ConfigService) {}
+
   getPostgresConfig(): TypeOrmModuleOptions {
     return {
       type: 'postgres',
-      host: process.env.POSTGRES_HOST,
-      port: Number(process.env.POSTGRES_PORT ?? 5432),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
+      host: this.configService.get<string>('POSTGRES_HOST'),
+      port: parseInt(
+        this.configService.getOrThrow<string>('POSTGRES_PORT'),
+        10,
+      ),
+      username: this.configService.get<string>('POSTGRES_USER'),
+      password: this.configService.get<string>('POSTGRES_PASSWORD'),
+      database: this.configService.get<string>('POSTGRES_DB'),
       autoLoadEntities: true,
       synchronize: false,
       migrationsRun: true,
@@ -20,32 +27,35 @@ export class AppConfigService {
     };
   }
 
-  getWeatherApiConfig() {
-    const baseUrl = process.env.WEATHER_API_BASE_URL;
-    const apiKey = process.env.WEATHER_API_KEY;
+  getOpenWeatherMapConfig(): WeatherProviderConfig {
+    return {
+      baseUrl: this.configService.getOrThrow<string>(
+        'OPENWEATHER_API_BASE_URL',
+      ),
+      apiKey: this.configService.getOrThrow<string>('OPENWEATHER_API_KEY'),
+    };
+  }
 
-    if (!baseUrl || !apiKey) {
-      throw new Error(
-        'Missing WEATHER_API_BASE_URL or WEATHER_API_KEY in environment',
-      );
-    }
-
-    return { baseUrl, apiKey };
+  getWeatherApiConfig(): WeatherProviderConfig {
+    return {
+      baseUrl: this.configService.getOrThrow<string>('WEATHER_API_BASE_URL'),
+      apiKey: this.configService.getOrThrow<string>('WEATHER_API_KEY'),
+    };
   }
 
   getMailerConfig(): MailerOptions {
     return {
       transport: {
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT ?? 587),
+        host: this.configService.get<string>('SMTP_HOST'),
+        port: parseInt(this.configService.getOrThrow<string>('SMTP_PORT'), 10),
         secure: false,
         auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASSWORD,
+          user: this.configService.get<string>('SMTP_USER'),
+          pass: this.configService.get<string>('SMTP_PASSWORD'),
         },
       },
       defaults: {
-        from: `"${process.env.SMTP_SENDER_NAME ?? 'NoReply'}" <${process.env.SMTP_SENDER_EMAIL}>`,
+        from: `"${this.configService.get<string>('SMTP_SENDER_NAME') ?? 'NoReply'}" <${this.configService.get<string>('SMTP_SENDER_EMAIL')}>`,
       },
     };
   }
