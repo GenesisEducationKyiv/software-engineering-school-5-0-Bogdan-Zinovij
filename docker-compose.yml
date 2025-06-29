@@ -19,6 +19,16 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7
+    container_name: weather-redis
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    command: redis-server --save 60 1 --loglevel warning
+
   app:
     build:
       context: .
@@ -28,11 +38,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     env_file: .env
     environment:
       POSTGRES_HOST: postgres
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     ports:
       - '3000:3000'
 
 volumes:
   postgres_data:
+  redis_data:

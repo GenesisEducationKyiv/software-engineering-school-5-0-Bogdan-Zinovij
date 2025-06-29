@@ -7,6 +7,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { TokenModule } from './token/token.module';
 import { validationSchema } from './config/validation';
+import { RedisCacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { validationSchema } from './config/validation';
       isGlobal: true,
       validationSchema,
     }),
+    RedisCacheModule,
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),

@@ -3,6 +3,8 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { MailerOptions } from '@nestjs-modules/mailer';
 import { WeatherProviderConfig } from 'src/weather/domain/types/weather-provider-config.type';
 import { ConfigService } from '@nestjs/config';
+import * as redisStore from 'cache-manager-ioredis';
+import { CacheModuleOptions } from '@nestjs/cache-manager';
 
 @Injectable()
 export class AppConfigService {
@@ -24,6 +26,15 @@ export class AppConfigService {
       migrationsRun: true,
       migrations: ['dist/database/migrations/*.js'],
       logging: ['query', 'error', 'schema', 'warn'],
+    };
+  }
+
+  getRedisConfig(): CacheModuleOptions {
+    return {
+      store: redisStore,
+      host: this.configService.getOrThrow<string>('REDIS_HOST'),
+      port: parseInt(this.configService.getOrThrow<string>('REDIS_PORT'), 10),
+      ttl: parseInt(this.configService.getOrThrow<string>('REDIS_TTL'), 10),
     };
   }
 
