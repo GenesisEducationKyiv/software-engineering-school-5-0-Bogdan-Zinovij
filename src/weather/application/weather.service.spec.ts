@@ -3,9 +3,9 @@ import { WeatherService } from './weather.service';
 import { WeatherClient } from './weather-client';
 import { Weather } from '../domain/weather.model';
 import { WeatherData } from '../domain/types/weather-data.type';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
 import { MetricsService } from 'src/monitoring/metrics.service';
+import { InMemoryCacheService } from 'src/common/cache/in-memory-cache.service';
+import { CacheService } from 'src/common/cache/cache.service';
 
 const mockWeatherData: WeatherData = {
   temperature: 20,
@@ -22,29 +22,24 @@ const mockMetricsService = {
   incWeatherCacheMiss: jest.fn(),
 };
 
-describe('WeatherService', () => {
+describe('WeatherService (unit)', () => {
   let service: WeatherService;
   let client: MockWeatherClient;
-  let cacheManager: Cache;
+  let cache: InMemoryCacheService;
 
   beforeEach(async () => {
-    const cacheStore = {
-      get: jest.fn(),
-      set: jest.fn(),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         WeatherService,
         { provide: WeatherClient, useClass: MockWeatherClient },
-        { provide: CACHE_MANAGER, useValue: cacheStore },
+        { provide: CacheService, useClass: InMemoryCacheService },
         { provide: MetricsService, useValue: mockMetricsService },
       ],
     }).compile();
 
     service = module.get<WeatherService>(WeatherService);
     client = module.get(WeatherClient);
-    cacheManager = module.get<Cache>(CACHE_MANAGER);
+    cache = module.get<CacheService>(CacheService) as InMemoryCacheService;
   });
 
   afterEach(() => {
@@ -54,7 +49,7 @@ describe('WeatherService', () => {
   it('should return weather from cache if exists (cache hit)', async () => {
     const city = 'Kyiv';
     const cachedWeather = new Weather(25, 50, 'Cloudy');
-    (cacheManager.get as jest.Mock).mockResolvedValue(cachedWeather);
+    await cache.set(`weather:${city.toLowerCase()}`, cachedWeather, 3600);
 
     const result = await service.getCurrentWeather(city);
 
@@ -65,16 +60,13 @@ describe('WeatherService', () => {
 
   it('should fetch weather if not in cache (cache miss)', async () => {
     const city = 'Lviv';
-    (cacheManager.get as jest.Mock).mockResolvedValue(undefined);
-
     const result = await service.getCurrentWeather(city);
 
     expect(result).toEqual(new Weather(20, 60, 'Sunny'));
     expect(client.getWeather).toHaveBeenCalledWith(city);
-    expect(cacheManager.set).toHaveBeenCalledWith(
-      `weather:${city.toLowerCase()}`,
-      mockWeatherData,
-    );
+
+    const cached = await cache.get(`weather:${city.toLowerCase()}`);
+    expect(cached).toEqual(mockWeatherData);
     expect(mockMetricsService.incWeatherCacheMiss).toHaveBeenCalled();
   });
 });
