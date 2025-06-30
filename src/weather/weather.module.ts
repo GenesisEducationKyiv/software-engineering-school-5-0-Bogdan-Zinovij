@@ -10,11 +10,11 @@ import { WeatherApiProvider } from './infrastructure/providers/weatherapi.provid
 import { OpenWeatherMapProvider } from './infrastructure/providers/openweathermap.provider';
 import { WeatherProviderConfig } from './domain/types/weather-provider-config.type';
 import { WeatherLogger } from './infrastructure/logger/weather.logger';
-import { RedisCacheModule } from 'src/cache/cache.module';
+import { RedisModule } from '../common/redis/redis.module';
 import { MetricsModule } from 'src/monitoring/metrics.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule, RedisCacheModule, MetricsModule],
+  imports: [HttpModule, ConfigModule, RedisModule, MetricsModule],
   controllers: [WeatherController],
   providers: [
     WeatherService,
