@@ -25,3 +25,20 @@ jobs:
 
       - name: Run linter
         run: npm run lint
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm test
+
+  integration-tests:
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+
+      - name: Run integration tests
+        run: npm run test:integration:docker
