@@ -2,38 +2,28 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication, HttpStatus } from '@nestjs/common';
+import { INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { setupTestApp, teardownTestApp } from './setup-test-app';
-import { WeatherService } from '../../src/weather/application/weather.service';
-import { Weather } from '../../src/weather/domain/weather.model';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 
 describe('WeatherController (Integration)', () => {
   let app: INestApplication;
   let server: any;
+  let cacheManager: Cache;
 
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
-    })
-      .overrideProvider(WeatherService)
-      .useValue({
-        getCurrentWeather: jest.fn((city: string) => {
-          if (city === 'NotFoundCity') {
-            const error = new Error('City not found') as any;
-            error.response = { status: HttpStatus.BAD_REQUEST };
-            throw error;
-          }
-
-          return Promise.resolve(new Weather(22, 60, `Clear sky in ${city}`));
-        }),
-      })
-      .compile();
+    }).compile();
 
     app = moduleFixture.createNestApplication();
     await setupTestApp(app);
+    await app.init();
     server = app.getHttpServer();
+    cacheManager = app.get<Cache>(CACHE_MANAGER);
   });
 
   afterAll(async () => {
@@ -41,17 +31,38 @@ describe('WeatherController (Integration)', () => {
   });
 
   describe('GET /weather', () => {
-    it('should return weather for valid city', async () => {
+    it('should return weather for valid city (misses cache)', async () => {
+      const city = 'Kyiv';
+      await cacheManager.del(`weather:${city.toLowerCase()}`);
+
       const response = await request(server)
         .get('/weather')
-        .query({ city: 'Kyiv' })
+        .query({ city })
         .expect(200);
 
-      expect(response.body).toMatchObject({
-        temperature: 22,
-        humidity: 60,
-        description: 'Clear sky in Kyiv',
-      });
+      expect(response.body).toHaveProperty('temperature');
+      expect(response.body).toHaveProperty('humidity');
+      expect(response.body).toHaveProperty('description');
+
+      const cached = await cacheManager.get(`weather:${city.toLowerCase()}`);
+      expect(cached).toBeDefined();
+    });
+
+    it('should return weather from cache if available (cache hit)', async () => {
+      const city = 'CachedCity';
+      const mockData = {
+        temperature: 10,
+        humidity: 50,
+        description: 'Cached weather',
+      };
+      await cacheManager.set(`weather:${city.toLowerCase()}`, mockData);
+
+      const response = await request(server)
+        .get('/weather')
+        .query({ city })
+        .expect(200);
+
+      expect(response.body).toEqual(mockData);
     });
 
     it('should return 400 for missing city query param', async () => {
@@ -64,6 +75,7 @@ describe('WeatherController (Integration)', () => {
         .get('/weather')
         .query({ city: 'NotFoundCity' })
         .expect(404);
+
       expect(response.body.message).toBe('City not found');
     });
   });
