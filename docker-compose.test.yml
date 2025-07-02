@@ -20,11 +20,16 @@ services:
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
       POSTGRES_DB: test_db
-      WEATHER_API_KEY: test_key
+      WEATHER_API_KEY: your_weather_api_key_here
+      WEATHER_API_BASE_URL: http://api.weatherapi.com/v1/current.json
+      OPENWEATHER_API_KEY: your_open_weather_map_api_key_here
+      OPENWEATHER_API_BASE_URL: https://api.openweathermap.org/data/2.5/weather
       SMTP_HOST: test.smtp.com
       SMTP_PORT: 1025
       SMTP_USER: test
       SMTP_PASSWORD: test
+      SMTP_SENDER_NAME: weather-app
+      SMTP_SENDER_EMAIL: sender@example.com
       APP_PORT: 3001
     depends_on:
       - postgres-test
