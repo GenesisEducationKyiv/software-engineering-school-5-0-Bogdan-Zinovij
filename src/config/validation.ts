@@ -19,4 +19,8 @@ export const validationSchema = Joi.object({
   SMTP_PASSWORD: Joi.string().required(),
   SMTP_SENDER_NAME: Joi.string().optional(),
   SMTP_SENDER_EMAIL: Joi.string().email().required(),
+
+  REDIS_HOST: Joi.string().required(),
+  REDIS_PORT: Joi.string().pattern(/^\d+$/).required(),
+  REDIS_TTL: Joi.string().pattern(/^\d+$/).required(),
 });
