@@ -103,7 +103,7 @@ describe('WeatherController (Integration with mocked WeatherClient)', () => {
         .get('/weather')
         .query({ city: 'NotFoundCity' })
         .expect(404);
-
+      
       expect(response.body.message).toBe('City not found');
     });
   });
