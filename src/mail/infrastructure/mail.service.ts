@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { MailerService } from '@nestjs-modules/mailer';
+import { MailSender } from '../domain/mail-sender';
 
 interface SendMailParams {
   receiverEmail: string;
@@ -8,8 +9,10 @@ interface SendMailParams {
 }
 
 @Injectable()
-export class MailService {
-  constructor(private readonly mailerService: MailerService) {}
+export class MailService extends MailSender {
+  constructor(private readonly mailerService: MailerService) {
+    super();
+  }
 
   async sendMail({
     receiverEmail,
