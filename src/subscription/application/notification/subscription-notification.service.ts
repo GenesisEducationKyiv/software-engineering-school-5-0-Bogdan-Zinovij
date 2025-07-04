@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { MailService } from 'src/mail/application/mail.service';
+import { MailSender } from 'src/mail/domain/mail-sender';
 import { MailTemplates } from 'src/mail/constants/mail.templates';
 import { SubscriptionEmailLinkHelper } from './subscription-email-link.helper';
 import { ConfirmationEmailDto } from './dto/confirmation-email.dto';
@@ -8,7 +8,7 @@ import { WeatherUpdateEmailDto } from './dto/weather-update-email.dto';
 
 @Injectable()
 export class SubscriptionNotificationService {
-  constructor(private readonly mailService: MailService) {}
+  constructor(private readonly mailService: MailSender) {}
 
   async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
     const confirmLink = SubscriptionEmailLinkHelper.getConfirmLink(data.token);

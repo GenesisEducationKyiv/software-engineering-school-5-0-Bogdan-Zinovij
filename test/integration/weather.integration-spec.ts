@@ -8,6 +8,7 @@ import { AppModule } from '../../src/app.module';
 import { setupTestApp, teardownTestApp } from './setup-test-app';
 import { WeatherClient } from '../../src/weather/application/weather-client';
 import { CacheService } from '../../src/common/cache/cache.service';
+import { MailSender } from 'src/mail/domain/mail-sender';
 
 describe('WeatherController (Integration with mocked WeatherClient)', () => {
   let app: INestApplication;
@@ -30,12 +31,18 @@ describe('WeatherController (Integration with mocked WeatherClient)', () => {
     }),
   };
 
+  const mockMailSender = {
+    sendMail: jest.fn(),
+  };
+
   beforeAll(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
       .overrideProvider(WeatherClient)
       .useValue(mockWeatherClient)
+      .overrideProvider(MailSender)
+      .useValue(mockMailSender)
       .compile();
 
     app = moduleFixture.createNestApplication();
@@ -103,7 +110,7 @@ describe('WeatherController (Integration with mocked WeatherClient)', () => {
         .get('/weather')
         .query({ city: 'NotFoundCity' })
         .expect(404);
-      
+
       expect(response.body.message).toBe('City not found');
     });
   });
