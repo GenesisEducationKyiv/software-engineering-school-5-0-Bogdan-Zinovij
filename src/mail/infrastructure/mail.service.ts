@@ -9,10 +9,8 @@ interface SendMailParams {
 }
 
 @Injectable()
-export class MailService extends MailSender {
-  constructor(private readonly mailerService: MailerService) {
-    super();
-  }
+export class MailService implements MailSender {
+  constructor(private readonly mailerService: MailerService) {}
 
   async sendMail({
     receiverEmail,
