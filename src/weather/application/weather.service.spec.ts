@@ -3,7 +3,7 @@ import { WeatherService } from './weather.service';
 import { WeatherClient } from './weather-client';
 import { Weather } from '../domain/weather.model';
 import { WeatherData } from '../domain/types/weather-data.type';
-import { MetricsService } from 'src/monitoring/metrics.service';
+import { MetricsService } from 'src/monitoring/domain/metrics.service';
 import { InMemoryCacheService } from 'src/common/cache/in-memory-cache.service';
 import { CacheService } from 'src/common/cache/cache.service';
 

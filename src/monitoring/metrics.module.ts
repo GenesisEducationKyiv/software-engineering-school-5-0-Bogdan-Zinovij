@@ -1,11 +1,14 @@
 import { Module } from '@nestjs/common';
 import { makeCounterProvider } from '@willsoto/nestjs-prometheus';
-import { MetricsService } from './metrics.service';
+import { PromMetricsService } from './infrastructure/prom-metrics.service';
+import { MetricsService } from './domain/metrics.service';
 
 @Module({
   providers: [
-    MetricsService,
-
+    {
+      provide: MetricsService,
+      useClass: PromMetricsService,
+    },
     makeCounterProvider({
       name: 'weather_cache_hit',
       help: 'Number of times weather data was returned from cache',

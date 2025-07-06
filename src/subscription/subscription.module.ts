@@ -11,6 +11,8 @@ import { SubscriptionCronService } from './application/cron/subscription.cron';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenModule } from 'src/token/token.module';
 import { SubscriptionNotificationService } from './application/notification/subscription-notification.service';
+import { MailSender } from 'src/mail/domain/mail-sender';
+import { MailService } from 'src/mail/infrastructure/mail.service';
 
 @Module({
   imports: [
@@ -26,6 +28,10 @@ import { SubscriptionNotificationService } from './application/notification/subs
     SubscriptionService,
     SubscriptionCronService,
     SubscriptionNotificationService,
+    {
+      provide: MailSender,
+      useClass: MailService,
+    },
     {
       provide: 'SubscriptionRepository',
       useClass: TypeOrmSubscriptionRepository,
