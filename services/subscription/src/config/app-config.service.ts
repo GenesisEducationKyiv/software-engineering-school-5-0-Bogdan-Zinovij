@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { MailerOptions } from '@nestjs-modules/mailer';
 import { WeatherProviderConfig } from 'src/weather/domain/types/weather-provider-config.type';
 import { ConfigService } from '@nestjs/config';
 
@@ -40,23 +39,6 @@ export class AppConfigService {
     return {
       baseUrl: this.configService.getOrThrow<string>('WEATHER_API_BASE_URL'),
       apiKey: this.configService.getOrThrow<string>('WEATHER_API_KEY'),
-    };
-  }
-
-  getMailerConfig(): MailerOptions {
-    return {
-      transport: {
-        host: this.configService.get<string>('SMTP_HOST'),
-        port: parseInt(this.configService.getOrThrow<string>('SMTP_PORT'), 10),
-        secure: false,
-        auth: {
-          user: this.configService.get<string>('SMTP_USER'),
-          pass: this.configService.get<string>('SMTP_PASSWORD'),
-        },
-      },
-      defaults: {
-        from: `"${this.configService.get<string>('SMTP_SENDER_NAME') ?? 'NoReply'}" <${this.configService.get<string>('SMTP_SENDER_EMAIL')}>`,
-      },
     };
   }
 }

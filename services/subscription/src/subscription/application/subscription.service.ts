@@ -7,7 +7,7 @@ import { Weather } from 'src/weather/domain/weather.model';
 import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
-import { SubscriptionNotificationService } from './notification/subscription-notification.service';
+import { NotificationHttpService } from './notification/notification-http-service';
 
 @Injectable()
 export class SubscriptionService {
@@ -16,7 +16,7 @@ export class SubscriptionService {
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherService,
-    private readonly notificationService: SubscriptionNotificationService,
+    private readonly notificationHttpService: NotificationHttpService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
@@ -39,7 +39,7 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.notificationService.sendConfirmationEmail({
+    await this.notificationHttpService.sendConfirmationEmail({
       email: subscription.email,
       token: token.value,
     });
@@ -67,15 +67,13 @@ export class SubscriptionService {
       subscription.city,
     );
 
-    await this.notificationService.sendSubscriptionConfirmedEmail(
-      subscription.email,
-      {
-        frequency: subscription.frequency,
-        city: subscription.city,
-        weather,
-        token: token.value,
-      },
-    );
+    await this.notificationHttpService.sendSubscriptionConfirmedEmail({
+      email: subscription.email,
+      frequency: subscription.frequency,
+      city: subscription.city,
+      weather,
+      token: token.value,
+    });
 
     return subscription;
   }
@@ -95,7 +93,9 @@ export class SubscriptionService {
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
 
-    await this.notificationService.sendUnsubscribeSuccess(subscription.email);
+    await this.notificationHttpService.sendUnsubscribeSuccess(
+      subscription.email,
+    );
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -124,7 +124,7 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationService.sendWeatherUpdate({
+        await this.notificationHttpService.sendWeatherUpdate({
           email: sub.email,
           city: sub.city,
           weather,

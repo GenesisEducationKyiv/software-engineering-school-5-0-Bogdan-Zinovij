@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { MailSender } from 'src/mail/domain/mail-sender';
 import { MailTemplates } from 'src/mail/constants/mail.templates';
-import { SubscriptionEmailLinkHelper } from './subscription-email-link.helper';
-import { ConfirmationEmailDto } from './dto/confirmation-email.dto';
-import { SubscriptionConfirmedEmailDto } from './dto/subscription-confirmed-email.dto';
-import { WeatherUpdateEmailDto } from './dto/weather-update-email.dto';
+import { SubscriptionEmailLinkHelper } from '../helpers/subscription-email-link.helper';
+import { ConfirmationEmailDto } from '../dto/confirmation-email.dto';
+import { SubscriptionConfirmedEmailDto } from '../dto/subscription-confirmed-email.dto';
+import { WeatherUpdateEmailDto } from '../dto/weather-update-email.dto';
 
 @Injectable()
-export class SubscriptionNotificationService {
+export class NotificationService {
   constructor(private readonly mailService: MailSender) {}
 
   async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
@@ -20,14 +20,13 @@ export class SubscriptionNotificationService {
   }
 
   async sendSubscriptionConfirmedEmail(
-    email: string,
     data: SubscriptionConfirmedEmailDto,
   ): Promise<void> {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
       data.token,
     );
     await this.mailService.sendMail({
-      receiverEmail: email,
+      receiverEmail: data.email,
       subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
       html: MailTemplates.SUBSCRIPTION_CONFIRMED.html(
         data.frequency,

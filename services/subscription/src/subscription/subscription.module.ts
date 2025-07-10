@@ -5,33 +5,26 @@ import { SubscriptionService } from './application/subscription.service';
 import { SubscriptionController } from './interfaces/controllers/subscription.controller';
 import { SubscriptionEntity } from './infrastructure/persistence/entities/subscription.entity';
 import { TypeOrmSubscriptionRepository } from './infrastructure/persistence/repositories/typeorm-subscription.repository';
-import { MailModule } from 'src/mail/mail.module';
 import { WeatherModule } from 'src/weather/weather.module';
 import { SubscriptionCronService } from './application/cron/subscription.cron';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenModule } from 'src/token/token.module';
-import { SubscriptionNotificationService } from './application/notification/subscription-notification.service';
-import { MailSender } from 'src/mail/domain/mail-sender';
-import { MailService } from 'src/mail/infrastructure/mail.service';
-
+import { NotificationHttpService } from './application/notification/notification-http-service';
+import { HttpModule } from '@nestjs/axios';
 @Module({
   imports: [
     TypeOrmModule.forFeature([SubscriptionEntity]),
     ScheduleModule.forRoot(),
     ConfigModule,
-    MailModule,
     WeatherModule,
     TokenModule,
+    HttpModule,
   ],
   controllers: [SubscriptionController],
   providers: [
     SubscriptionService,
     SubscriptionCronService,
-    SubscriptionNotificationService,
-    {
-      provide: MailSender,
-      useClass: MailService,
-    },
+    NotificationHttpService,
     {
       provide: 'SubscriptionRepository',
       useClass: TypeOrmSubscriptionRepository,

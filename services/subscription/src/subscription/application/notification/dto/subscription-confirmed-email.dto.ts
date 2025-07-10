@@ -2,6 +2,7 @@ import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequen
 import { Weather } from 'src/weather/domain/weather.model';
 
 export interface SubscriptionConfirmedEmailDto {
+  email: string;
   frequency: SubscriptionFrequencyEnum;
   city: string;
   weather: Weather;
