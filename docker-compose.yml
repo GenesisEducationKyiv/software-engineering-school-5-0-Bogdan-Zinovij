@@ -65,7 +65,7 @@ services:
         condition: service_healthy
       notification:
         condition: service_started
-      weather-service:
+      weather:
         condition: service_started
     env_file: ./services/subscription/.env
     environment:
@@ -74,6 +74,18 @@ services:
       WEATHER_SERVICE_URL: http://weather:3002
     ports:
       - "3000:3000"
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: gateway
+    ports:
+      - "3004:3004"
+    env_file: ./services/api-gateway/.env
+    depends_on:
+      - weather
+      - subscription
 
 volumes:
   postgres_data:
