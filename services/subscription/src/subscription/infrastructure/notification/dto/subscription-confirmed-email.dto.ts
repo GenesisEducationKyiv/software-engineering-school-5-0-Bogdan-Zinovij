@@ -1,10 +1,10 @@
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
-import { Weather } from 'src/weather/domain/weather.model';
+import { WeatherData } from 'src/common/types/weather-data.type';
 
 export interface SubscriptionConfirmedEmailDto {
   email: string;
   frequency: SubscriptionFrequencyEnum;
   city: string;
-  weather: Weather;
+  weather: WeatherData;
   token: string;
 }

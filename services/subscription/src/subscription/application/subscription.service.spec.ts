@@ -6,7 +6,7 @@ import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequen
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
 import { TokenService } from 'src/token/application/token.service';
 import { Subscription } from '../domain/subscription.model';
-import { SubscriptionNotificationService } from './notification/subscription-notification.service';
+import { SubscriptionNotificationService } from '../infrastructure/notification/subscription-notification.service';
 
 describe('SubscriptionService', () => {
   let service: SubscriptionService;

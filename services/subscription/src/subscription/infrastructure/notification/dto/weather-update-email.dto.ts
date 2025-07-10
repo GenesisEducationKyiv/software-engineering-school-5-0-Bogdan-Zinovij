@@ -1,8 +1,8 @@
-import { Weather } from 'src/weather/domain/weather.model';
+import { WeatherData } from 'src/common/types/weather-data.type';
 
 export interface WeatherUpdateEmailDto {
   email: string;
   city: string;
-  weather: Weather;
+  weather: WeatherData;
   token: string;
 }

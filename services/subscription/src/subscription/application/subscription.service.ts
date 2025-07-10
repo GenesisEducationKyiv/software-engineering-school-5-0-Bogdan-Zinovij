@@ -2,12 +2,11 @@ import { Injectable, Inject } from '@nestjs/common';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
 import { Subscription } from '../domain/subscription.model';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
-import { WeatherService } from 'src/weather/application/weather.service';
-import { Weather } from 'src/weather/domain/weather.model';
+import { WeatherHttpClientService } from '../infrastructure/weather/weather-http.client';
 import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
-import { NotificationHttpService } from './notification/notification-http-service';
+import { NotificationHttpService } from '../infrastructure/notification/notification-http-service';
 
 @Injectable()
 export class SubscriptionService {
@@ -15,7 +14,7 @@ export class SubscriptionService {
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
-    private readonly weatherService: WeatherService,
+    private readonly weatherService: WeatherHttpClientService,
     private readonly notificationHttpService: NotificationHttpService,
   ) {}
 
@@ -110,17 +109,9 @@ export class SubscriptionService {
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
-    const weatherCache = new Map<string, Weather>();
-
     for (const sub of subscribers) {
       try {
-        let weather: Weather;
-        if (weatherCache.has(sub.city)) {
-          weather = weatherCache.get(sub.city)!;
-        } else {
-          weather = await this.weatherService.getCurrentWeather(sub.city);
-          weatherCache.set(sub.city, weather);
-        }
+        const weather = await this.weatherService.getCurrentWeather(sub.city);
 
         const token = await this.tokenService.findById(sub.tokenId);
 

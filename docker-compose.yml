@@ -38,6 +38,22 @@ services:
       - "3001:3001"
     env_file: ./services/notification/.env
 
+  weather:
+    build:
+      context: ./services/weather
+      dockerfile: Dockerfile
+    container_name: weather
+    restart: always
+    depends_on:
+      redis:
+        condition: service_started
+    env_file: ./services/weather/.env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3002:3002"
+
   subscription:
     build:
       context: ./services/subscription
@@ -47,16 +63,15 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
-        condition: service_started
       notification:
+        condition: service_started
+      weather-service:
         condition: service_started
     env_file: ./services/subscription/.env
     environment:
       POSTGRES_HOST: postgres
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
       NOTIFICATION_URL: http://notification:3001
+      WEATHER_SERVICE_URL: http://weather:3002
     ports:
       - "3000:3000"
 

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { WeatherModule } from './weather/weather.module';
 import { DatabaseModule } from './database/database.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -17,7 +16,6 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
     }),
     PrometheusModule.register(),
     DatabaseModule,
-    WeatherModule,
     SubscriptionModule,
     TokenModule,
   ],
