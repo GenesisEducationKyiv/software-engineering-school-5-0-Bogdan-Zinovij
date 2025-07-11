@@ -3,9 +3,9 @@ import { WeatherService } from './weather.service';
 import { WeatherClient } from './weather-client';
 import { Weather } from '../domain/weather.model';
 import { WeatherData } from '../domain/types/weather-data.type';
-import { MetricsService } from 'src/monitoring/domain/metrics.service';
-import { InMemoryCacheService } from 'src/common/cache/in-memory-cache.service';
-import { CacheService } from 'src/common/cache/cache.service';
+import { MetricsService } from '../../monitoring/domain/metrics.service';
+import { InMemoryCacheService } from '../../cache/infrastructure/in-memory-cache.service';
+import { CacheService } from '../../cache/domain/cache.service';
 
 const mockWeatherData: WeatherData = {
   temperature: 20,

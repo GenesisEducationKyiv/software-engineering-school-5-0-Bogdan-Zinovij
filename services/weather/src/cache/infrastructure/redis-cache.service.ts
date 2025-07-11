@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CacheService } from './cache.service';
+import { CacheService } from '../domain/cache.service';
 import Redis from 'ioredis';
 
 @Injectable()

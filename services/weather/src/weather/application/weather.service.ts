@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { Weather } from '../domain/weather.model';
 import { WeatherClient } from './weather-client';
-import { MetricsService } from 'src/monitoring/domain/metrics.service';
-import { CacheService } from 'src/common/cache/cache.service';
+import { MetricsService } from '../../monitoring/domain/metrics.service';
+import { CacheService } from '../../cache/domain/cache.service';
 
 @Injectable()
 export class WeatherService {

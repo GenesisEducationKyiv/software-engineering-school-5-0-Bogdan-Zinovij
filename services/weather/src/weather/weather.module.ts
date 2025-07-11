@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
-import { WeatherController } from './interfaces/controllers/weather.controller';
+import { WeatherController } from './presentation/controllers/weather.controller';
 import { WeatherService } from './application/weather.service';
 import { AppConfigService } from 'src/config/app-config.service';
 import { WeatherClient } from './application/weather-client';
@@ -11,7 +11,7 @@ import { OpenWeatherMapProvider } from './infrastructure/providers/openweatherma
 import { WeatherProviderConfig } from './domain/types/weather-provider-config.type';
 import { WeatherLogger } from './infrastructure/logger/weather.logger';
 import { MetricsModule } from 'src/monitoring/metrics.module';
-import { CacheModule } from 'src/common/cache/cache.module';
+import { CacheModule } from 'src/cache/cache.module';
 
 @Module({
   imports: [HttpModule, ConfigModule, CacheModule, MetricsModule],
