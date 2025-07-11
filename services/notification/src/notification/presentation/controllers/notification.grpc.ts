@@ -22,8 +22,8 @@ export class NotificationGrpcController {
   }
 
   @GrpcMethod('NotificationService', 'SendUnsubscribeSuccess')
-  sendUnsubscribeSuccess(email: string): Promise<void> {
-    return this.notificationService.sendUnsubscribeSuccess(email);
+  sendUnsubscribeSuccess(data: { email: string }): Promise<void> {
+    return this.notificationService.sendUnsubscribeSuccess(data.email);
   }
 
   @GrpcMethod('NotificationService', 'SendWeatherUpdate')

@@ -78,6 +78,7 @@ services:
       WEATHER_URL: http://weather:3002
     ports:
       - "3003:3003"
+      - "50053:50053"
 
   api-gateway:
     build:

@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package subscription;
+
+service SubscriptionService {
+  rpc Subscribe (CreateSubscriptionRequest) returns (EmptyResponse);
+  rpc Confirm (TokenRequest) returns (EmptyResponse);
+  rpc Unsubscribe (TokenRequest) returns (EmptyResponse);
+}
+
+message CreateSubscriptionRequest {
+  string email = 1;
+  string city = 2;
+  string frequency = 3;
+}
+
+message TokenRequest {
+  string token = 1;
+}
+
+message EmptyResponse {}

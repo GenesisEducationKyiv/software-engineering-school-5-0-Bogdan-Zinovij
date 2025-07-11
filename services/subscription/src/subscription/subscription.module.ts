@@ -2,19 +2,17 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { SubscriptionService } from './application/subscription.service';
-import { SubscriptionController } from './presentation/controllers/subscription.controller';
 import { SubscriptionEntity } from './infrastructure/persistence/entities/subscription.entity';
 import { TypeOrmSubscriptionRepository } from './infrastructure/persistence/repositories/typeorm-subscription.repository';
 import { SubscriptionCronService } from './application/cron/subscription.cron';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TokenModule } from 'src/token/token.module';
-import { NotificationHttpService } from './infrastructure/notification/notification-http-service';
 import { HttpModule } from '@nestjs/axios';
-import { WeatherHttpClientService } from './infrastructure/weather/weather-http.client';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
 import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
+import { SubscriptionGrpcController } from './presentation/controllers/subscription-grpc.controller';
 
 @Module({
   imports: [
@@ -44,13 +42,11 @@ import { NotificationGrpcClientService } from './infrastructure/notification/not
     TokenModule,
     HttpModule,
   ],
-  controllers: [SubscriptionController],
+  controllers: [SubscriptionGrpcController],
   providers: [
     SubscriptionService,
     SubscriptionCronService,
-    NotificationHttpService,
     NotificationGrpcClientService,
-    WeatherHttpClientService,
     WeatherGrpcClientService,
     {
       provide: 'SubscriptionRepository',
