@@ -1,12 +1,11 @@
-const domain = process.env.APP_DOMAIN ?? 'localhost';
-const port = process.env.APP_PORT ?? '3000';
+const API_GATEWAY_URL = process.env.API_GATEWAY_URL ?? 'http:/localhost:3000';
 
 export class SubscriptionEmailLinkHelper {
   static getConfirmLink(token: string): string {
-    return `http://${domain}:${port}/subscription/confirm/${token}`;
+    return `${API_GATEWAY_URL}/subscription/confirm/${token}`;
   }
 
   static getUnsubscribeLink(token: string): string {
-    return `http://${domain}:${port}/subscription/unsubscribe/${token}`;
+    return `${API_GATEWAY_URL}/subscription/unsubscribe/${token}`;
   }
 }

@@ -37,6 +37,8 @@ services:
     ports:
       - "3001:3001"
     env_file: ./services/notification/.env
+    environment:
+      API_GATEWAY_URL: http://localhost:3000
 
   weather:
     build:
@@ -71,18 +73,21 @@ services:
     environment:
       POSTGRES_HOST: postgres
       NOTIFICATION_URL: http://notification:3001
-      WEATHER_SERVICE_URL: http://weather:3002
+      WEATHER_URL: http://weather:3002
     ports:
-      - "3000:3000"
+      - "3003:3003"
 
   api-gateway:
     build:
       context: ./services/api-gateway
       dockerfile: Dockerfile
-    container_name: gateway
+    container_name: api-gateway
     ports:
-      - "3004:3004"
+      - "3000:3000"
     env_file: ./services/api-gateway/.env
+    environment:
+      WEATHER_SERVICE_URL: http://weather:3002
+      SUBSCRIPTION_SERVICE_URL: http://subscription:3003
     depends_on:
       - weather
       - subscription

@@ -6,7 +6,7 @@ export function setupProxy(app: any) {
   app.use(
     '/weather',
     createProxyMiddleware({
-      target: process.env.WEATHER_SERVICE_URL,
+      target: process.env.WEATHER_SERVICE_URL + '/weather',
       changeOrigin: true,
     }),
   );
@@ -14,7 +14,7 @@ export function setupProxy(app: any) {
   app.use(
     '/subscription',
     createProxyMiddleware({
-      target: process.env.SUBSCRIPTION_SERVICE_URL,
+      target: process.env.SUBSCRIPTION_SERVICE_URL + '/subscription',
       changeOrigin: true,
     }),
   );

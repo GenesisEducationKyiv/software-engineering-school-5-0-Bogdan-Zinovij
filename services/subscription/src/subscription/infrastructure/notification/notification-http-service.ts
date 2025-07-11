@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { firstValueFrom } from 'rxjs';
 import { ConfirmationEmailDto } from './dto/confirmation-email.dto';
 import { SubscriptionConfirmedEmailDto } from './dto/subscription-confirmed-email.dto';
@@ -7,12 +7,16 @@ import { WeatherUpdateEmailDto } from './dto/weather-update-email.dto';
 
 @Injectable()
 export class NotificationHttpService {
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject('NOTIFICATION_URL')
+    private readonly NOTIFICATION_URL: string,
+  ) {}
 
   async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
     await firstValueFrom(
       this.httpService.post(
-        'http://notification:3001/notification/confirmation',
+        `${this.NOTIFICATION_URL}/notification/confirmation`,
         data,
       ),
     );
@@ -23,7 +27,7 @@ export class NotificationHttpService {
   ): Promise<void> {
     await firstValueFrom(
       this.httpService.post(
-        'http://notification:3001/notification/confirmed',
+        `${this.NOTIFICATION_URL}/notification/confirmed`,
         data,
       ),
     );
@@ -32,7 +36,7 @@ export class NotificationHttpService {
   async sendUnsubscribeSuccess(email: string): Promise<void> {
     await firstValueFrom(
       this.httpService.post(
-        'http://notification:3001/notification/unsubscribe',
+        `${this.NOTIFICATION_URL}/notification/unsubscribe`,
         { email },
       ),
     );
@@ -41,7 +45,7 @@ export class NotificationHttpService {
   async sendWeatherUpdate(data: WeatherUpdateEmailDto): Promise<void> {
     await firstValueFrom(
       this.httpService.post(
-        'http://notification:3001/notification/weather',
+        `${this.NOTIFICATION_URL}/notification/weather`,
         data,
       ),
     );
