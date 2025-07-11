@@ -5,8 +5,8 @@ import { SubscriptionRepository } from '../domain/subscription.repository.interf
 import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
-import { NotificationHttpService } from '../infrastructure/notification/notification-http-service';
 import { WeatherGrpcClientService } from '../infrastructure/weather/weather-grpc.client';
+import { NotificationGrpcClientService } from '../infrastructure/notification/notification-grpc.client';
 
 @Injectable()
 export class SubscriptionService {
@@ -15,7 +15,7 @@ export class SubscriptionService {
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
-    private readonly notificationHttpService: NotificationHttpService,
+    private readonly notificationHttpService: NotificationGrpcClientService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {

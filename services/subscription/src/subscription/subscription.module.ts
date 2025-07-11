@@ -14,6 +14,7 @@ import { WeatherHttpClientService } from './infrastructure/weather/weather-http.
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
+import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
 
 @Module({
   imports: [
@@ -25,6 +26,15 @@ import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.
           package: 'weather',
           protoPath: join(__dirname, '../../proto/weather.proto'),
           url: 'weather:50052',
+        },
+      },
+      {
+        name: 'NOTIFICATION_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: 'notification',
+          protoPath: join(__dirname, '../../proto/notification.proto'),
+          url: 'notification:50051',
         },
       },
     ]),
@@ -39,6 +49,7 @@ import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.
     SubscriptionService,
     SubscriptionCronService,
     NotificationHttpService,
+    NotificationGrpcClientService,
     WeatherHttpClientService,
     WeatherGrpcClientService,
     {

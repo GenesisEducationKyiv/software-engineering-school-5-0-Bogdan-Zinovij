@@ -36,6 +36,7 @@ services:
     container_name: notification
     ports:
       - "3001:3001"
+      - "50051:50051"
     env_file: ./services/notification/.env
     environment:
       API_GATEWAY_URL: http://localhost:3000
