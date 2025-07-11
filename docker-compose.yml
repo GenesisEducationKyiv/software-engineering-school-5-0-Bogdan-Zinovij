@@ -55,6 +55,7 @@ services:
       REDIS_PORT: 6379
     ports:
       - "3002:3002"
+      - "50052:50052"
 
   subscription:
     build:

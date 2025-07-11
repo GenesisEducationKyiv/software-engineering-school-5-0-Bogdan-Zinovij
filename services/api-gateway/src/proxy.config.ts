@@ -4,14 +4,6 @@ import { createProxyMiddleware } from 'http-proxy-middleware';
 
 export function setupProxy(app: any) {
   app.use(
-    '/weather',
-    createProxyMiddleware({
-      target: process.env.WEATHER_SERVICE_URL + '/weather',
-      changeOrigin: true,
-    }),
-  );
-
-  app.use(
     '/subscription',
     createProxyMiddleware({
       target: process.env.SUBSCRIPTION_SERVICE_URL + '/subscription',

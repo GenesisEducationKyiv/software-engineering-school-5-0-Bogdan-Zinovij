@@ -11,8 +11,23 @@ import { TokenModule } from 'src/token/token.module';
 import { NotificationHttpService } from './infrastructure/notification/notification-http-service';
 import { HttpModule } from '@nestjs/axios';
 import { WeatherHttpClientService } from './infrastructure/weather/weather-http.client';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { join } from 'path';
+import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
+
 @Module({
   imports: [
+    ClientsModule.register([
+      {
+        name: 'WEATHER_PACKAGE',
+        transport: Transport.GRPC,
+        options: {
+          package: 'weather',
+          protoPath: join(__dirname, '../../proto/weather.proto'),
+          url: 'weather:50052',
+        },
+      },
+    ]),
     TypeOrmModule.forFeature([SubscriptionEntity]),
     ScheduleModule.forRoot(),
     ConfigModule,
@@ -25,6 +40,7 @@ import { WeatherHttpClientService } from './infrastructure/weather/weather-http.
     SubscriptionCronService,
     NotificationHttpService,
     WeatherHttpClientService,
+    WeatherGrpcClientService,
     {
       provide: 'SubscriptionRepository',
       useClass: TypeOrmSubscriptionRepository,
