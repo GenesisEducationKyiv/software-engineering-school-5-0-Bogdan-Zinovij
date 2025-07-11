@@ -13,7 +13,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { SubscriptionService } from 'src/subscription/application/subscription.service';
-import { CreateSubscriptionDto } from 'src/subscription/dtos/create-subscription.dto';
+import { CreateSubscriptionDto } from 'src/subscription/presentation/dtos/create-subscription.dto';
 import { HTTP_ERROR_MESSAGES } from 'src/common/constants/http.constants';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { SubscriptionErrorCode } from 'src/subscription/constants/subscription.errors';

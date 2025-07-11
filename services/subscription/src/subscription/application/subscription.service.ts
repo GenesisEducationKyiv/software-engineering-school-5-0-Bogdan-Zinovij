@@ -1,5 +1,5 @@
 import { Injectable, Inject } from '@nestjs/common';
-import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
+import { CreateSubscriptionDto } from '../presentation/dtos/create-subscription.dto';
 import { Subscription } from '../domain/subscription.model';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
 import { WeatherHttpClientService } from '../infrastructure/weather/weather-http.client';

@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { MailSender } from 'src/mail/domain/mail-sender';
-import { MailTemplates } from 'src/mail/constants/mail.templates';
+import { MailTemplates } from 'src/notification/email-templates/mail.templates';
 import { SubscriptionEmailLinkHelper } from '../helpers/subscription-email-link.helper';
-import { ConfirmationEmailDto } from '../dto/confirmation-email.dto';
-import { SubscriptionConfirmedEmailDto } from '../dto/subscription-confirmed-email.dto';
-import { WeatherUpdateEmailDto } from '../dto/weather-update-email.dto';
+import { ConfirmationEmailDto } from '../presentation/dto/confirmation-email.dto';
+import { SubscriptionConfirmedEmailDto } from '../presentation/dto/subscription-confirmed-email.dto';
+import { WeatherUpdateEmailDto } from '../presentation/dto/weather-update-email.dto';
 
 @Injectable()
 export class NotificationService {

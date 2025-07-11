@@ -1,8 +1,8 @@
 import { Body, Controller, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { NotificationService } from 'src/notification/application/subscription-notification.service';
-import { ConfirmationEmailDto } from 'src/notification/dto/confirmation-email.dto';
-import { SubscriptionConfirmedEmailDto } from 'src/notification/dto/subscription-confirmed-email.dto';
-import { WeatherUpdateEmailDto } from 'src/notification/dto/weather-update-email.dto';
+import { NotificationService } from 'src/notification/application/notification.service';
+import { ConfirmationEmailDto } from 'src/notification/presentation/dto/confirmation-email.dto';
+import { SubscriptionConfirmedEmailDto } from 'src/notification/presentation/dto/subscription-confirmed-email.dto';
+import { WeatherUpdateEmailDto } from 'src/notification/presentation/dto/weather-update-email.dto';
 
 @Controller('notification')
 export class NotificationController {
