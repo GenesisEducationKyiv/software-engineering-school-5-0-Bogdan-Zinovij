@@ -30,7 +30,6 @@ export class SubscriptionController {
     try {
       await this.subscriptionService.subscribe(dto);
     } catch (err) {
-      console.log(err);
       switch (err.message) {
         case SubscriptionErrorCode.EMAIL_ALREADY_SUBSCRIBED:
           throw new ConflictException(
