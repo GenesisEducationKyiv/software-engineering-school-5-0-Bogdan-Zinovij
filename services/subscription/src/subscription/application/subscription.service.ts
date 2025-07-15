@@ -106,6 +106,9 @@ export class SubscriptionService {
   async sendWeatherToSubscribers(
     frequency: SubscriptionFrequencyEnum,
   ): Promise<void> {
+    // Test
+    // const subscribers = await this.subscriptionRepository.find({ frequency });
+
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
@@ -115,7 +118,7 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationHttpService.sendWeatherUpdate({
+        void this.notificationHttpService.sendWeatherUpdate({
           email: sub.email,
           city: sub.city,
           weather,

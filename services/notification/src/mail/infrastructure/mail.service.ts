@@ -17,6 +17,9 @@ export class MailService implements MailSender {
     subject,
     html,
   }: SendMailParams): Promise<void> {
+    // Test
+    // await new Promise((resolve) => setTimeout(resolve, 250));
+
     await this.mailerService.sendMail({ to: receiverEmail, subject, html });
   }
 }

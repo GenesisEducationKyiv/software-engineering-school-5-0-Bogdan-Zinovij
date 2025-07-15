@@ -18,6 +18,7 @@ import { HTTP_ERROR_MESSAGES } from 'src/common/constants/http.constants';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { SubscriptionErrorCode } from 'src/subscription/constants/subscription.errors';
 import { TokenErrorCode } from 'src/token/constants/token.errors';
+import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 
 @Controller('subscription')
 export class SubscriptionController {
@@ -74,5 +75,13 @@ export class SubscriptionController {
           throw new BadRequestException(HTTP_ERROR_MESSAGES.INVALID_INPUT);
       }
     }
+  }
+
+  @Get('test')
+  @HttpCode(HttpStatus.OK)
+  async test(): Promise<void> {
+    await this.subscriptionService.sendWeatherToSubscribers(
+      SubscriptionFrequencyEnum.DAILY,
+    );
   }
 }
