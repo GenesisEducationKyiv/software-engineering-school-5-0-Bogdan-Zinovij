@@ -8,6 +8,7 @@ import { TokenErrorCode } from 'src/token/constants/token.errors';
 import { HTTP_ERROR_MESSAGES } from 'src/common/constants/http.constants';
 import { status } from '@grpc/grpc-js';
 import { CreateSubscriptionDto } from '../dtos/create-subscription.dto';
+import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 
 @Controller()
 export class SubscriptionGrpcController {
@@ -87,5 +88,13 @@ export class SubscriptionGrpcController {
           });
       }
     }
+  }
+
+  @GrpcMethod('SubscriptionService', 'SendTestWeather')
+  async sendTestWeather({ frequency }: { frequency: string }): Promise<{}> {
+    await this.subscriptionService.sendWeatherToSubscribers(
+      frequency as SubscriptionFrequencyEnum,
+    );
+    return {};
   }
 }

@@ -26,6 +26,7 @@ interface SubscriptionGrpcService {
   subscribe(dto: CreateSubscriptionDto): any;
   confirm(request: { token: string }): any;
   unsubscribe(request: { token: string }): any;
+  sendTestWeather(request: { frequency: string }): any;
 }
 
 @Controller('subscription')
@@ -94,6 +95,26 @@ export class SubscriptionGatewayController {
           throw new BadRequestException(message);
         case status.NOT_FOUND:
           throw new NotFoundException(message);
+        default:
+          throw new InternalServerErrorException(message);
+      }
+    }
+  }
+
+  @Get('test')
+  @HttpCode(HttpStatus.OK)
+  async test(): Promise<void> {
+    try {
+      await lastValueFrom(
+        this.subscriptionService.sendTestWeather({ frequency: 'daily' }),
+      );
+    } catch (err: any) {
+      const code = err.code;
+      const message = err.details || 'Unknown error';
+
+      switch (code) {
+        case status.INVALID_ARGUMENT:
+          throw new BadRequestException(message);
         default:
           throw new InternalServerErrorException(message);
       }

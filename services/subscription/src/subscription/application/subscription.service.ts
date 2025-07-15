@@ -106,6 +106,9 @@ export class SubscriptionService {
   async sendWeatherToSubscribers(
     frequency: SubscriptionFrequencyEnum,
   ): Promise<void> {
+    // Test
+    // const subscribers = await this.subscriptionRepository.find({ frequency });
+
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
