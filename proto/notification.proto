@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package notification;
+
+service NotificationService {
+  rpc SendConfirmationEmail (ConfirmationEmailDto) returns (Empty);
+  rpc SendSubscriptionConfirmedEmail (SubscriptionConfirmedEmailDto) returns (Empty);
+  rpc SendUnsubscribeSuccess (UnsubscribeEmailDto) returns (Empty);
+  rpc SendWeatherUpdate (WeatherUpdateEmailDto) returns (Empty);
+}
+
+message ConfirmationEmailDto {
+  string email = 1;
+  string token = 2;
+}
+
+message SubscriptionConfirmedEmailDto {
+  string email = 1;
+  string frequency = 2;
+  string city = 3;
+  WeatherData weather = 4;
+  string token = 5;
+}
+
+message WeatherUpdateEmailDto {
+  string email = 1;
+  string city = 2;
+  WeatherData weather = 3;
+  string token = 4;
+}
+
+message UnsubscribeEmailDto {
+  string email = 1;
+}
+
+message WeatherData {
+  double temperature = 1;
+  double humidity = 2;
+  string description = 3;
+}
+
+message Empty {}
