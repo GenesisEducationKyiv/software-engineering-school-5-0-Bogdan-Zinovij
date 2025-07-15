@@ -3,9 +3,12 @@ import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { join } from 'path';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const config = app.get(ConfigService);
 
   app.enableCors({
     origin: '*',
@@ -26,11 +29,13 @@ async function bootstrap() {
     options: {
       package: 'subscription',
       protoPath: join(__dirname, '../proto/subscription.proto'),
-      url: '0.0.0.0:50053',
+      url: config.get<string>('SUBSCRIPTION_GRPC_URL', '0.0.0.0:50053'),
     },
   });
 
   await app.startAllMicroservices();
-  await app.listen(process.env.APP_PORT ?? 3003);
+
+  const port = config.get<number>('APP_PORT', 3003);
+  await app.listen(port);
 }
 void bootstrap();

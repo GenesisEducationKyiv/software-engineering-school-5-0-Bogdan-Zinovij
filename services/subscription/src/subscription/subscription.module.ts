@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SubscriptionService } from './application/subscription.service';
 import { SubscriptionEntity } from './infrastructure/persistence/entities/subscription.entity';
 import { TypeOrmSubscriptionRepository } from './infrastructure/persistence/repositories/typeorm-subscription.repository';
@@ -54,11 +54,14 @@ import { SubscriptionGrpcController } from './presentation/controllers/subscript
     },
     {
       provide: 'NOTIFICATION_URL',
-      useValue: process.env.NOTIFICATION_URL ?? 'http://notification:3001',
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) =>
+        config.get<string>('NOTIFICATION_URL'),
     },
     {
       provide: 'WEATHER_URL',
-      useValue: process.env.WEATHER_URL ?? 'http://weather:3002',
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => config.get<string>('WEATHER_URL'),
     },
   ],
 })

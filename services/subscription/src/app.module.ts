@@ -2,8 +2,6 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { SubscriptionModule } from './subscription/subscription.module';
-import { ServeStaticModule } from '@nestjs/serve-static';
-import { join } from 'path';
 import { TokenModule } from './token/token.module';
 import { validationSchema } from './config/validation';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
@@ -11,9 +9,6 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema }),
-    ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', 'public'),
-    }),
     PrometheusModule.register(),
     DatabaseModule,
     SubscriptionModule,

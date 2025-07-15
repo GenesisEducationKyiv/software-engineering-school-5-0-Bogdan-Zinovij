@@ -15,7 +15,7 @@ export class SubscriptionService {
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
-    private readonly notificationHttpService: NotificationGrpcClientService,
+    private readonly notificationService: NotificationGrpcClientService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
@@ -38,7 +38,7 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.notificationHttpService.sendConfirmationEmail({
+    await this.notificationService.sendConfirmationEmail({
       email: subscription.email,
       token: token.value,
     });
@@ -66,7 +66,7 @@ export class SubscriptionService {
       subscription.city,
     );
 
-    await this.notificationHttpService.sendSubscriptionConfirmedEmail({
+    await this.notificationService.sendSubscriptionConfirmedEmail({
       email: subscription.email,
       frequency: subscription.frequency,
       city: subscription.city,
@@ -92,9 +92,7 @@ export class SubscriptionService {
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
 
-    await this.notificationHttpService.sendUnsubscribeSuccess(
-      subscription.email,
-    );
+    await this.notificationService.sendUnsubscribeSuccess(subscription.email);
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -118,7 +116,7 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationHttpService.sendWeatherUpdate({
+        await this.notificationService.sendWeatherUpdate({
           email: sub.email,
           city: sub.city,
           weather,

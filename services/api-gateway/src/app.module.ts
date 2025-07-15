@@ -3,9 +3,13 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { WeatherGatewayController } from './weather/weather-gateway.controller';
 import { SubscriptionGatewayController } from './subscription/subscription-gateway.controller';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     ClientsModule.register([
       {
         name: 'WEATHER_PACKAGE',
