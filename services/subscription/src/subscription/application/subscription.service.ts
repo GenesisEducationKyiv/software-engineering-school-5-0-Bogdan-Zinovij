@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
 import { CreateSubscriptionDto } from '../presentation/dtos/create-subscription.dto';
 import { Subscription } from '../domain/subscription.model';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
@@ -6,17 +6,26 @@ import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
 import { WeatherGrpcClientService } from '../infrastructure/weather/weather-grpc.client';
-import { NotificationGrpcClientService } from '../infrastructure/notification/notification-grpc.client';
+import { ClientKafka } from '@nestjs/microservices';
+import { ConfirmationEmailRequestedEvent } from 'src/libs/kafka/dtos/confirmation-email-requested.event';
+import { SubscriptionConfirmedEvent } from 'src/libs/kafka/dtos/subscription-confirmed.event';
+import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
+import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
 
 @Injectable()
-export class SubscriptionService {
+export class SubscriptionService implements OnModuleInit {
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
+    @Inject('KAFKA_PRODUCER')
+    private readonly kafkaClient: ClientKafka,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
-    private readonly notificationService: NotificationGrpcClientService,
   ) {}
+
+  async onModuleInit() {
+    await this.kafkaClient.connect();
+  }
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
     const existing = await this.subscriptionRepository.find({
@@ -38,9 +47,10 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.notificationService.sendConfirmationEmail({
-      email: subscription.email,
-      token: token.value,
+    this.kafkaClient.emit('notification.confirmation-email', {
+      value: JSON.stringify(
+        new ConfirmationEmailRequestedEvent(subscription.email, token.value),
+      ),
     });
 
     return subscription;
@@ -66,12 +76,16 @@ export class SubscriptionService {
       subscription.city,
     );
 
-    await this.notificationService.sendSubscriptionConfirmedEmail({
-      email: subscription.email,
-      frequency: subscription.frequency,
-      city: subscription.city,
-      weather,
-      token: token.value,
+    this.kafkaClient.emit('notification.subscription-confirmed', {
+      value: JSON.stringify(
+        new SubscriptionConfirmedEvent(
+          subscription.email,
+          subscription.frequency,
+          subscription.city,
+          weather,
+          token.value,
+        ),
+      ),
     });
 
     return subscription;
@@ -92,7 +106,9 @@ export class SubscriptionService {
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
 
-    await this.notificationService.sendUnsubscribeSuccess(subscription.email);
+    this.kafkaClient.emit('notification.unsubscribed', {
+      value: JSON.stringify(new UnsubscribedEvent(subscription.email)),
+    });
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -104,9 +120,6 @@ export class SubscriptionService {
   async sendWeatherToSubscribers(
     frequency: SubscriptionFrequencyEnum,
   ): Promise<void> {
-    // Test
-    // const subscribers = await this.subscriptionRepository.find({ frequency });
-
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
@@ -116,11 +129,15 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationService.sendWeatherUpdate({
-          email: sub.email,
-          city: sub.city,
-          weather,
-          token: token.value,
+        this.kafkaClient.emit('notification.weather-update', {
+          value: JSON.stringify(
+            new WeatherUpdateReadyEvent(
+              sub.email,
+              sub.city,
+              weather,
+              token.value,
+            ),
+          ),
         });
       } catch (err) {
         console.error(`Failed to send weather to ${sub.email}:`, err);

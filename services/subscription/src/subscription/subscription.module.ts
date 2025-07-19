@@ -18,6 +18,26 @@ import { SubscriptionGrpcController } from './presentation/controllers/subscript
   imports: [
     ClientsModule.register([
       {
+        name: 'KAFKA_PRODUCER',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'subscription',
+            brokers: ['kafka:9092'],
+            retry: {
+              retries: 5,
+              factor: 2,
+              initialRetryTime: 3000,
+            },
+          },
+          producer: {
+            allowAutoTopicCreation: true,
+          },
+        },
+      },
+    ]),
+    ClientsModule.register([
+      {
         name: 'WEATHER_PACKAGE',
         transport: Transport.GRPC,
         options: {
