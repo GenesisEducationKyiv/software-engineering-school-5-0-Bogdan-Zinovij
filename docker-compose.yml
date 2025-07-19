@@ -61,8 +61,8 @@ services:
 
   notification:
     build:
-      context: ./services/notification
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/notification/Dockerfile
     container_name: notification
     ports:
       - "3001:3001"
@@ -73,8 +73,8 @@ services:
 
   weather:
     build:
-      context: ./services/weather
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/weather/Dockerfile
     container_name: weather
     restart: always
     depends_on:
@@ -90,8 +90,8 @@ services:
 
   subscription:
     build:
-      context: ./services/subscription
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/subscription/Dockerfile
     container_name: subscription
     restart: always
     depends_on:
@@ -114,8 +114,8 @@ services:
 
   api-gateway:
     build:
-      context: ./services/api-gateway
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: services/api-gateway/Dockerfile
     container_name: api-gateway
     ports:
       - "3000:3000"

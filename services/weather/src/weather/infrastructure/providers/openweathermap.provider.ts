@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WeatherProvider } from '../../domain/interfaces/weather-provider.interface';
 import { WeatherData } from 'src/weather/domain/types/weather-data.type';
 import { HttpService } from '@nestjs/axios';
-import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { OpenWeatherMapResponse } from './types/openweathermap-response.type';
 import { buildOpenWeatherMapUrl } from './helpers/weather-url.builder';
@@ -27,10 +26,9 @@ export class OpenWeatherMapProvider implements WeatherProvider {
     );
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const response = (await lastValueFrom(
+      const response = await lastValueFrom(
         this.httpService.get<OpenWeatherMapResponse>(url),
-      )) as AxiosResponse<OpenWeatherMapResponse>;
+      );
 
       // api error imitation
       // throw new Error('Server unavailable');

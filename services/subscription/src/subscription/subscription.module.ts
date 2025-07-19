@@ -44,7 +44,7 @@ import { SubscriptionEventPublisher } from './application/ports/subscription-eve
         transport: Transport.GRPC,
         options: {
           package: 'weather',
-          protoPath: join(__dirname, '../../proto/weather.proto'),
+          protoPath: join(__dirname, '../libs/grpc/proto/weather.proto'),
           url: 'weather:50052',
         },
       },
@@ -53,7 +53,7 @@ import { SubscriptionEventPublisher } from './application/ports/subscription-eve
         transport: Transport.GRPC,
         options: {
           package: 'notification',
-          protoPath: join(__dirname, '../../proto/notification.proto'),
+          protoPath: join(__dirname, '../libs/grpc/proto/notification.proto'),
           url: 'notification:50051',
         },
       },
