@@ -16,7 +16,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         transport: Transport.GRPC,
         options: {
           package: 'weather',
-          protoPath: join(__dirname, '../proto/weather.proto'),
+          protoPath: join(__dirname, './libs/grpc/proto/weather.proto'),
           url: 'weather:50052',
         },
       },
@@ -25,7 +25,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
         transport: Transport.GRPC,
         options: {
           package: 'subscription',
-          protoPath: join(__dirname, '../proto/subscription.proto'),
+          protoPath: join(__dirname, './libs/grpc/proto/subscription.proto'),
           url: 'subscription:50053',
         },
       },

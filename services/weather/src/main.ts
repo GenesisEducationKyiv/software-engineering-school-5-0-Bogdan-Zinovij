@@ -25,7 +25,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: 'weather',
-      protoPath: join(__dirname, '../proto/weather.proto'),
+      protoPath: join(__dirname, './libs/grpc/proto/weather.proto'),
       url: '0.0.0.0:50052',
     },
   });

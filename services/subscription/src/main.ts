@@ -28,7 +28,7 @@ async function bootstrap() {
     transport: Transport.GRPC,
     options: {
       package: 'subscription',
-      protoPath: join(__dirname, '../proto/subscription.proto'),
+      protoPath: join(__dirname, './libs/grpc/proto/subscription.proto'),
       url: config.get<string>('SUBSCRIPTION_GRPC_URL', '0.0.0.0:50053'),
     },
   });

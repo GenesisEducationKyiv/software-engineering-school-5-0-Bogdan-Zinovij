@@ -2,7 +2,6 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { join } from 'path';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,14 +21,17 @@ async function bootstrap() {
   );
 
   app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.GRPC,
+    transport: Transport.KAFKA,
     options: {
-      package: 'notification',
-      protoPath: join(__dirname, '../proto/notification.proto'),
-      url: '0.0.0.0:50051',
+      client: {
+        clientId: 'notification',
+        brokers: ['kafka:9092'],
+      },
+      consumer: {
+        groupId: 'notification-consumer',
+      },
     },
   });
-
   await app.startAllMicroservices();
 
   await app.listen(process.env.APP_PORT ?? 3001);

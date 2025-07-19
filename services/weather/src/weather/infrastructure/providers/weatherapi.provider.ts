@@ -2,7 +2,6 @@ import { Inject, Injectable } from '@nestjs/common';
 import { WeatherProvider } from '../../domain/interfaces/weather-provider.interface';
 import { WeatherData } from 'src/weather/domain/types/weather-data.type';
 import { HttpService } from '@nestjs/axios';
-import { AxiosResponse } from 'axios';
 import { lastValueFrom } from 'rxjs';
 import { WeatherApiResponse } from './types/weatherapi-response.type';
 import { buildWeatherApiUrl } from './helpers/weather-url.builder';
@@ -27,10 +26,9 @@ export class WeatherApiProvider implements WeatherProvider {
     );
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const response = (await lastValueFrom(
+      const response = await lastValueFrom(
         this.httpService.get<WeatherApiResponse>(url),
-      )) as AxiosResponse<WeatherApiResponse>;
+      );
 
       this.logger.log(
         this.PROVIDER_NAME,
