@@ -1,4 +1,4 @@
-import { Injectable, Inject, OnModuleInit } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CreateSubscriptionDto } from '../presentation/dtos/create-subscription.dto';
 import { Subscription } from '../domain/subscription.model';
 import { SubscriptionRepository } from '../domain/subscription.repository.interface';
@@ -6,26 +6,21 @@ import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
 import { WeatherGrpcClientService } from '../infrastructure/weather/weather-grpc.client';
-import { ClientKafka } from '@nestjs/microservices';
 import { ConfirmationEmailRequestedEvent } from 'src/libs/kafka/dtos/confirmation-email-requested.event';
 import { SubscriptionConfirmedEvent } from 'src/libs/kafka/dtos/subscription-confirmed.event';
 import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
+import { SubscriptionEventPublisher } from './ports/subscription-event.publisher.interface';
 
 @Injectable()
-export class SubscriptionService implements OnModuleInit {
+export class SubscriptionService {
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
-    @Inject('KAFKA_PRODUCER')
-    private readonly kafkaClient: ClientKafka,
+    private readonly publisher: SubscriptionEventPublisher,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
   ) {}
-
-  async onModuleInit() {
-    await this.kafkaClient.connect();
-  }
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
     const existing = await this.subscriptionRepository.find({
@@ -47,11 +42,9 @@ export class SubscriptionService implements OnModuleInit {
       tokenId: token.id,
     });
 
-    this.kafkaClient.emit('notification.confirmation-email', {
-      value: JSON.stringify(
-        new ConfirmationEmailRequestedEvent(subscription.email, token.value),
-      ),
-    });
+    this.publisher.publishConfirmationEmail(
+      new ConfirmationEmailRequestedEvent(subscription.email, token.value),
+    );
 
     return subscription;
   }
@@ -76,17 +69,15 @@ export class SubscriptionService implements OnModuleInit {
       subscription.city,
     );
 
-    this.kafkaClient.emit('notification.subscription-confirmed', {
-      value: JSON.stringify(
-        new SubscriptionConfirmedEvent(
-          subscription.email,
-          subscription.frequency,
-          subscription.city,
-          weather,
-          token.value,
-        ),
+    this.publisher.publishSubscriptionConfirmed(
+      new SubscriptionConfirmedEvent(
+        subscription.email,
+        subscription.frequency,
+        subscription.city,
+        weather,
+        token.value,
       ),
-    });
+    );
 
     return subscription;
   }
@@ -106,9 +97,9 @@ export class SubscriptionService implements OnModuleInit {
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
 
-    this.kafkaClient.emit('notification.unsubscribed', {
-      value: JSON.stringify(new UnsubscribedEvent(subscription.email)),
-    });
+    this.publisher.publishUnsubscribed(
+      new UnsubscribedEvent(subscription.email),
+    );
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -129,16 +120,14 @@ export class SubscriptionService implements OnModuleInit {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        this.kafkaClient.emit('notification.weather-update', {
-          value: JSON.stringify(
-            new WeatherUpdateReadyEvent(
-              sub.email,
-              sub.city,
-              weather,
-              token.value,
-            ),
+        this.publisher.publishWeatherUpdate(
+          new WeatherUpdateReadyEvent(
+            sub.email,
+            sub.city,
+            weather,
+            token.value,
           ),
-        });
+        );
       } catch (err) {
         console.error(`Failed to send weather to ${sub.email}:`, err);
       }

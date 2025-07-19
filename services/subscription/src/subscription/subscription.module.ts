@@ -13,6 +13,8 @@ import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
 import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
 import { SubscriptionGrpcController } from './presentation/controllers/subscription-grpc.controller';
+import { KafkaSubscriptionEventPublisher } from './infrastructure/kafka/kafka-subscription-event.publisher';
+import { SubscriptionEventPublisher } from './application/ports/subscription-event.publisher.interface';
 
 @Module({
   imports: [
@@ -82,6 +84,10 @@ import { SubscriptionGrpcController } from './presentation/controllers/subscript
       provide: 'WEATHER_URL',
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get<string>('WEATHER_URL'),
+    },
+    {
+      provide: SubscriptionEventPublisher,
+      useClass: KafkaSubscriptionEventPublisher,
     },
   ],
 })
