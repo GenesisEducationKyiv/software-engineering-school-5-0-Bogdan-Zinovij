@@ -11,7 +11,6 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
-import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
 import { SubscriptionGrpcController } from './presentation/controllers/subscription-grpc.controller';
 import { SubscriptionEventPublisherImpl } from './application/event-publisher/subscription-event-publisher';
 import { SubscriptionEventPublisher } from './application/event-publisher/subscription-event-publisher.interface';
@@ -50,15 +49,6 @@ import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-b
           url: 'weather:50052',
         },
       },
-      {
-        name: 'NOTIFICATION_PACKAGE',
-        transport: Transport.GRPC,
-        options: {
-          package: 'notification',
-          protoPath: join(__dirname, '../libs/grpc/proto/notification.proto'),
-          url: 'notification:50051',
-        },
-      },
     ]),
     TypeOrmModule.forFeature([SubscriptionEntity]),
     ScheduleModule.forRoot(),
@@ -70,7 +60,6 @@ import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-b
   providers: [
     SubscriptionService,
     SubscriptionCronService,
-    NotificationGrpcClientService,
     WeatherGrpcClientService,
     {
       provide: 'SubscriptionRepository',
