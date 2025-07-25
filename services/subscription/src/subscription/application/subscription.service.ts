@@ -10,7 +10,7 @@ import { ConfirmationEmailRequestedEvent } from 'src/libs/kafka/dtos/confirmatio
 import { SubscriptionConfirmedEvent } from 'src/libs/kafka/dtos/subscription-confirmed.event';
 import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
-import { SubscriptionEventPublisher } from './ports/subscription-event.publisher.interface';
+import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
 
 @Injectable()
 export class SubscriptionService {

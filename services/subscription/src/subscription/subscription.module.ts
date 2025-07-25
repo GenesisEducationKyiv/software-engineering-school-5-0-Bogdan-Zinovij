@@ -13,8 +13,10 @@ import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
 import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
 import { SubscriptionGrpcController } from './presentation/controllers/subscription-grpc.controller';
-import { KafkaSubscriptionEventPublisher } from './infrastructure/kafka/kafka-subscription-event.publisher';
-import { SubscriptionEventPublisher } from './application/ports/subscription-event.publisher.interface';
+import { SubscriptionEventPublisherImpl } from './application/event-publisher/subscription-event-publisher';
+import { SubscriptionEventPublisher } from './application/event-publisher/subscription-event-publisher.interface';
+import { EventBus } from 'src/common/event-bus/domain/event-bus.interface';
+import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-bus.service';
 
 @Module({
   imports: [
@@ -87,7 +89,11 @@ import { SubscriptionEventPublisher } from './application/ports/subscription-eve
     },
     {
       provide: SubscriptionEventPublisher,
-      useClass: KafkaSubscriptionEventPublisher,
+      useClass: SubscriptionEventPublisherImpl,
+    },
+    {
+      provide: EventBus,
+      useClass: KafkaEventBus,
     },
   ],
 })
