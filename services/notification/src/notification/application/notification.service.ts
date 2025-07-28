@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Injectable } from '@nestjs/common';
 import { MailSender } from 'src/mail/domain/mail-sender';
 import { MailTemplates } from 'src/notification/email-templates/mail.templates';
@@ -5,13 +7,23 @@ import { SubscriptionEmailLinkHelper } from '../helpers/subscription-email-link.
 import { ConfirmationEmailDto } from '../presentation/dto/confirmation-email.dto';
 import { SubscriptionConfirmedEmailDto } from '../presentation/dto/subscription-confirmed-email.dto';
 import { WeatherUpdateEmailDto } from '../presentation/dto/weather-update-email.dto';
+import { LoggerPort } from '@libs/logger';
 
 @Injectable()
 export class NotificationService {
-  constructor(private readonly mailService: MailSender) {}
+  constructor(
+    private readonly mailService: MailSender,
+    private readonly logger: LoggerPort,
+  ) {}
 
   async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
     const confirmLink = SubscriptionEmailLinkHelper.getConfirmLink(data.token);
+
+    this.logger.info(
+      `Sending confirmation email to ${data.email}`,
+      'NotificationService',
+    );
+
     await this.mailService.sendMail({
       receiverEmail: data.email,
       subject: MailTemplates.CONFIRM_SUBSCRIPTION.subject,
@@ -25,6 +37,12 @@ export class NotificationService {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
       data.token,
     );
+
+    this.logger.info(
+      `Sending subscription confirmed email to ${data.email} for ${data.city} (${data.frequency})`,
+      'NotificationService',
+    );
+
     await this.mailService.sendMail({
       receiverEmail: data.email,
       subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
@@ -38,6 +56,11 @@ export class NotificationService {
   }
 
   async sendUnsubscribeSuccess(email: string): Promise<void> {
+    this.logger.info(
+      `Sending unsubscribe success email to ${email}`,
+      'NotificationService',
+    );
+
     await this.mailService.sendMail({
       receiverEmail: email,
       subject: MailTemplates.UNSUBSCRIBE_SUCCESS.subject,
@@ -49,6 +72,12 @@ export class NotificationService {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
       data.token,
     );
+
+    this.logger.info(
+      `Sending weather update email to ${data.email} for ${data.city}`,
+      'NotificationService',
+    );
+
     await this.mailService.sendMail({
       receiverEmail: data.email,
       subject: MailTemplates.WEATHER_UPDATE.subject(data.city),

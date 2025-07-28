@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@libs/logger": "file:../../libs/logger",
     "@grpc/grpc-js": "^1.13.4",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/common": "^11.1.3",
