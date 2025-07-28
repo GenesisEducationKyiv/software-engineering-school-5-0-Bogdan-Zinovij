@@ -59,6 +59,33 @@ services:
         kafka-topics.sh --create --if-not-exists --bootstrap-server localhost:9092 --replication-factor 1 --partitions 1 --topic notification.weather-update &&
         wait"
 
+  loki:
+    image: grafana/loki:2.9.0
+    container_name: loki
+    user: "root"
+    command: -config.file=/etc/loki/local-config.yaml -target=all
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./loki-config:/etc/loki
+      - ./loki-storage/index:/loki/index
+      - ./loki-storage/boltdb-cache:/loki/boltdb-cache
+      - ./loki-storage/chunks:/loki/chunks
+
+  grafana:
+    image: grafana/grafana:9.2.4
+    container_name: grafana
+    restart: always
+    ports:
+      - "3005:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    depends_on:
+      - loki
+
   notification:
     build:
       context: .
@@ -130,3 +157,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  grafana-storage:

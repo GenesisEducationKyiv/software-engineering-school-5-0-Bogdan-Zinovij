@@ -1,3 +1,5 @@
 node_modules
 dist
 /kafka
+/loki-data
+/loki-storage
