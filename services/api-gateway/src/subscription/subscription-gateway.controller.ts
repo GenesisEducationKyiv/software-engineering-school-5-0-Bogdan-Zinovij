@@ -22,7 +22,7 @@ import { status } from '@grpc/grpc-js';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { LoggerPort } from '@libs/logger';
-import { MetricsService } from '@libs/metrics';
+import { GatewayMetricsService } from '@libs/metrics';
 
 interface SubscriptionGrpcService {
   subscribe(dto: CreateSubscriptionDto): any;
@@ -39,7 +39,7 @@ export class SubscriptionGatewayController {
   constructor(
     @Inject('SUBSCRIPTION_PACKAGE') private client: ClientGrpc,
     private readonly logger: LoggerPort,
-    private readonly metrics: MetricsService,
+    private readonly metrics: GatewayMetricsService,
   ) {}
 
   onModuleInit() {

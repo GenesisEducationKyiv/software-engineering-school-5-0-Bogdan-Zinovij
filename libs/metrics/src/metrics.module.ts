@@ -3,16 +3,20 @@ import {
   makeCounterProvider,
   PrometheusModule,
 } from '@willsoto/nestjs-prometheus';
-import { MetricsService } from './domain/metrics.service';
 import { PromMetricsService } from './infrastructure/prom-metrics.service';
+import { GatewayMetricsService } from './domain/gateway-metrics.service';
+import { NotificationMetricsService } from './domain/notification-metrics.service';
+import { SubscriptionMetricsService } from './domain/subscription-metrics.service';
+import { WeatherMetricsService } from './domain/weather-metrics.service';
 
 @Module({
   imports: [PrometheusModule.register()],
   providers: [
-    {
-      provide: MetricsService,
-      useClass: PromMetricsService,
-    },
+    { provide: WeatherMetricsService, useClass: PromMetricsService },
+    { provide: NotificationMetricsService, useClass: PromMetricsService },
+    { provide: SubscriptionMetricsService, useClass: PromMetricsService },
+    { provide: GatewayMetricsService, useClass: PromMetricsService },
+
     makeCounterProvider({
       name: 'http_requests_total',
       help: 'Total number of HTTP requests',
@@ -47,6 +51,11 @@ import { PromMetricsService } from './infrastructure/prom-metrics.service';
       help: 'Number of times weather data was fetched from API',
     }),
   ],
-  exports: [MetricsService],
+  exports: [
+    WeatherMetricsService,
+    NotificationMetricsService,
+    SubscriptionMetricsService,
+    GatewayMetricsService,
+  ],
 })
 export class MetricsModule {}

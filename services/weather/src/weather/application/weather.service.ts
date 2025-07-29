@@ -3,7 +3,7 @@ import { Weather } from '../domain/weather.model';
 import { WeatherClient } from './weather-client';
 import { CacheService } from '../../cache/domain/cache.service';
 import { LoggerPort } from '@libs/logger';
-import { MetricsService } from '@libs/metrics';
+import { WeatherMetricsService } from '@libs/metrics';
 import { SampleLogger } from '@libs/logger';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class WeatherService {
     private readonly client: WeatherClient,
     private readonly cache: CacheService,
     private readonly logger: LoggerPort,
-    private readonly metrics: MetricsService,
+    private readonly metrics: WeatherMetricsService,
   ) {}
 
   async getCurrentWeather(city: string): Promise<Weather> {

@@ -14,7 +14,7 @@ import { Inject } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import { status } from '@grpc/grpc-js';
 import { LoggerPort } from '@libs/logger';
-import { MetricsService } from '@libs/metrics';
+import { GatewayMetricsService } from '@libs/metrics';
 
 interface WeatherServiceGrpc {
   getCurrentWeather(request: { city: string }): any;
@@ -28,7 +28,7 @@ export class WeatherGatewayController {
   constructor(
     @Inject('WEATHER_PACKAGE') private client: ClientGrpc,
     private readonly logger: LoggerPort,
-    private readonly metrics: MetricsService,
+    private readonly metrics: GatewayMetricsService,
   ) {}
 
   onModuleInit() {

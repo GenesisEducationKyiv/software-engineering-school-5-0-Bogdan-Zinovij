@@ -1,10 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { Counter } from 'prom-client';
 import { InjectMetric } from '@willsoto/nestjs-prometheus';
-import { MetricsService } from '../domain/metrics.service';
+import { GatewayMetricsService } from '../domain/gateway-metrics.service';
+import { NotificationMetricsService } from '../domain/notification-metrics.service';
+import { SubscriptionMetricsService } from '../domain/subscription-metrics.service';
+import { WeatherMetricsService } from '../domain/weather-metrics.service';
 
 @Injectable()
-export class PromMetricsService implements MetricsService {
+export class PromMetricsService
+  implements
+    WeatherMetricsService,
+    NotificationMetricsService,
+    SubscriptionMetricsService,
+    GatewayMetricsService
+{
   constructor(
     @InjectMetric('http_requests_total')
     private readonly httpRequestsTotal: Counter,

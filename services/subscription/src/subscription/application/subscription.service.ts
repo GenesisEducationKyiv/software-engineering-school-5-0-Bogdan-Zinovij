@@ -12,7 +12,7 @@ import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
 import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
 import { LoggerPort } from '@libs/logger';
-import { MetricsService } from '@libs/metrics';
+import { SubscriptionMetricsService } from '@libs/metrics';
 
 @Injectable()
 export class SubscriptionService {
@@ -25,7 +25,7 @@ export class SubscriptionService {
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
     private readonly logger: LoggerPort,
-    private readonly metrics: MetricsService,
+    private readonly metrics: SubscriptionMetricsService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {

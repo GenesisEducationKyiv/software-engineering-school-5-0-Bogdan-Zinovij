@@ -6,7 +6,7 @@ import { ConfirmationEmailDto } from '../presentation/dto/confirmation-email.dto
 import { SubscriptionConfirmedEmailDto } from '../presentation/dto/subscription-confirmed-email.dto';
 import { WeatherUpdateEmailDto } from '../presentation/dto/weather-update-email.dto';
 import { LoggerPort } from '@libs/logger';
-import { MetricsService } from '@libs/metrics';
+import { NotificationMetricsService } from '@libs/metrics';
 
 @Injectable()
 export class NotificationService {
@@ -15,7 +15,7 @@ export class NotificationService {
   constructor(
     private readonly mailService: MailSender,
     private readonly logger: LoggerPort,
-    private readonly metrics: MetricsService,
+    private readonly metrics: NotificationMetricsService,
   ) {}
 
   async sendConfirmationEmail(data: ConfirmationEmailDto): Promise<void> {
