@@ -1,6 +1,6 @@
-import { Injectable, Scope } from "@nestjs/common";
-import { createLogger, format, transports } from "winston";
-import { LoggerPort } from "./logger.port";
+import { Injectable, Scope } from '@nestjs/common';
+import { createLogger, format, transports } from 'winston';
+import { LoggerPort } from '../domain/logger.port';
 
 const { combine, timestamp, printf, colorize } = format;
 
@@ -11,7 +11,7 @@ const customFormat = printf(({ level, message, timestamp }) => {
 @Injectable({ scope: Scope.TRANSIENT })
 export class AppLogger implements LoggerPort {
   private readonly logger = createLogger({
-    level: "debug",
+    level: 'debug',
     format: combine(timestamp(), colorize(), customFormat),
     transports: [new transports.Console()],
   });

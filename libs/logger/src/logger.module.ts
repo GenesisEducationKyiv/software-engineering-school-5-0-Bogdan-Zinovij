@@ -1,9 +1,9 @@
-import { Module } from "@nestjs/common";
-import { LoggerPort } from "./logger.port";
-import { AppLogger } from "./logger.service";
-import { LokiLogger } from "./loki-logger.service";
+import { Module } from '@nestjs/common';
+import { LoggerPort } from './domain/logger.port';
+import { AppLogger } from './infrastructure/logger.service';
+import { LokiLogger } from './infrastructure/loki-logger.service';
 
-const useLoki = process.env.LOGGER_DRIVER === "loki";
+const useLoki = process.env.LOGGER_DRIVER === 'loki';
 
 @Module({
   providers: [

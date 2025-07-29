@@ -70,3 +70,9 @@ The service exposes core Prometheus metrics via `libs/metrics`:
   **Alert:** High `miss` ratio indicates degraded cache or TTL misconfiguration.
 
 Retention of metrics is handled by Prometheus
+
+## 4. Log Sampling
+
+For high-frequency events like cache hits/misses, full logging is disabled to prevent log overload.  
+A simple counter-based sampling is used to log only 1 in N events (currently 1 in 100).  
+This preserves the ability to observe trends, but reducing log volume and storage usage.

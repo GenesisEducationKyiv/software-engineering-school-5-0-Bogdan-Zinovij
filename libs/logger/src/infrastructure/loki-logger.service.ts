@@ -1,16 +1,16 @@
-import { Injectable, Scope } from "@nestjs/common";
-import { LoggerPort } from "./logger.port";
-import { createLogger, transports, format } from "winston";
-import LokiTransport from "winston-loki";
+import { Injectable, Scope } from '@nestjs/common';
+import { LoggerPort } from '../domain/logger.port';
+import { createLogger, transports, format } from 'winston';
+import LokiTransport from 'winston-loki';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LokiLogger implements LoggerPort {
   private readonly logger = createLogger({
-    level: "info",
+    level: 'info',
     transports: [
       new LokiTransport({
-        host: process.env.LOKI_URL ?? "http://localhost:3100",
-        labels: { job: "nestjs-service" },
+        host: process.env.LOKI_URL ?? 'http://localhost:3100',
+        labels: { job: 'nestjs-service' },
         json: true,
         replaceTimestamp: true,
         interval: 5,
