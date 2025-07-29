@@ -32,7 +32,11 @@ export class PromMetricsService implements MetricsService {
   ) {}
 
   incHttpRequests(route: string, method: string, statusCode: number): void {
-    this.httpRequestsTotal.inc({ route, method, statusCode });
+    this.httpRequestsTotal.inc({
+      route,
+      method,
+      statusCode: statusCode.toString(),
+    });
   }
 
   incEmailSent(): void {

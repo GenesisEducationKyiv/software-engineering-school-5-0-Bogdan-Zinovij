@@ -10,13 +10,12 @@ import { WeatherApiProvider } from './infrastructure/providers/weatherapi.provid
 import { OpenWeatherMapProvider } from './infrastructure/providers/openweathermap.provider';
 import { WeatherProviderConfig } from './domain/types/weather-provider-config.type';
 import { WeatherLogger } from './infrastructure/logger/weather.logger';
-import { MetricsModule } from 'src/monitoring/metrics.module';
 import { CacheModule } from 'src/cache/cache.module';
 import { WeatherGrpcController } from './presentation/controllers/weather.grpc';
 import { LoggerModule } from '@libs/logger';
 
 @Module({
-  imports: [HttpModule, ConfigModule, CacheModule, MetricsModule, LoggerModule],
+  imports: [HttpModule, ConfigModule, CacheModule, LoggerModule],
   controllers: [/*WeatherController*/ WeatherGrpcController],
   providers: [
     WeatherService,

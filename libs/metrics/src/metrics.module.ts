@@ -1,9 +1,13 @@
 import { Module } from '@nestjs/common';
-import { makeCounterProvider } from '@willsoto/nestjs-prometheus';
+import {
+  makeCounterProvider,
+  PrometheusModule,
+} from '@willsoto/nestjs-prometheus';
 import { MetricsService } from './domain/metrics.service';
 import { PromMetricsService } from './infrastructure/prom-metrics.service';
 
 @Module({
+  imports: [PrometheusModule.register()],
   providers: [
     {
       provide: MetricsService,

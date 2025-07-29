@@ -2,11 +2,15 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-COPY libs/logger/package*.json ./libs/logger/
+COPY libs/logger ./libs/logger
+COPY libs/metrics ./libs/metrics
+
 WORKDIR /usr/src/app/libs/logger
 RUN npm install
+RUN npm run build
 
-COPY libs/logger ./
+WORKDIR /usr/src/app/libs/metrics
+RUN npm install
 RUN npm run build
 
 WORKDIR /usr/src/app/services/weather
@@ -14,8 +18,6 @@ COPY services/weather/package*.json ./
 RUN npm install
 
 COPY services/weather ./
-
-COPY libs/kafka ./src/libs/kafka
 COPY libs/grpc ./src/libs/grpc
 
 RUN npm run build

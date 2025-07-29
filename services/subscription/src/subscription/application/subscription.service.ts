@@ -12,6 +12,7 @@ import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
 import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
 import { LoggerPort } from '@libs/logger';
+import { MetricsService } from '@libs/metrics';
 
 @Injectable()
 export class SubscriptionService {
@@ -22,6 +23,7 @@ export class SubscriptionService {
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
     private readonly logger: LoggerPort,
+    private readonly metrics: MetricsService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
@@ -57,6 +59,7 @@ export class SubscriptionService {
       `Subscription created, confirmation email event published`,
       'SubscriptionService',
     );
+    this.metrics.incSubscriptionCreated();
 
     return subscription;
   }
@@ -100,6 +103,7 @@ export class SubscriptionService {
       `Subscription confirmed for ${subscription.email}`,
       'SubscriptionService',
     );
+    this.metrics.incSubscriptionConfirmed();
 
     return subscription;
   }
@@ -132,6 +136,7 @@ export class SubscriptionService {
       `Unsubscribed: ${subscription.email}`,
       'SubscriptionService',
     );
+    this.metrics.incSubscriptionCancelled();
   }
 
   async getConfirmedSubscriptionsByFrequency(

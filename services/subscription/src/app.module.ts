@@ -4,12 +4,10 @@ import { DatabaseModule } from './database/database.module';
 import { SubscriptionModule } from './subscription/subscription.module';
 import { TokenModule } from './token/token.module';
 import { validationSchema } from './config/validation';
-import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, validationSchema }),
-    PrometheusModule.register(),
     DatabaseModule,
     SubscriptionModule,
     TokenModule,

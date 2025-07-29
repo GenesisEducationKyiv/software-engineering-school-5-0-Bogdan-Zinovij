@@ -14,6 +14,7 @@ import { Inject } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import { status } from '@grpc/grpc-js';
 import { LoggerPort } from '@libs/logger';
+import { MetricsService } from '@libs/metrics';
 
 interface WeatherServiceGrpc {
   getCurrentWeather(request: { city: string }): any;
@@ -26,6 +27,7 @@ export class WeatherGatewayController {
   constructor(
     @Inject('WEATHER_PACKAGE') private client: ClientGrpc,
     private readonly logger: LoggerPort,
+    private readonly metrics: MetricsService,
   ) {}
 
   onModuleInit() {
@@ -49,6 +51,7 @@ export class WeatherGatewayController {
       const result = await lastValueFrom(response$);
 
       this.logger.info(`Weather data fetched for ${city}`, 'ApiGateway');
+      this.metrics.incHttpRequests('/weather', 'GET', 200);
 
       return result;
     } catch (err: any) {
@@ -57,6 +60,7 @@ export class WeatherGatewayController {
         err?.stack,
         'ApiGateway',
       );
+      this.metrics.incHttpRequests('/weather', 'GET', err.code ?? 500);
 
       const code = err.code;
       const message = err.details || 'Unknown error';

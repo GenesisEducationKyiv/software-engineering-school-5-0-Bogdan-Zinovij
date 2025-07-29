@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@libs/logger": "file:../../libs/logger",
+    "@libs/metrics": "file:../../libs/metrics",
     "@grpc/grpc-js": "^1.13.4",
     "@nestjs-modules/mailer": "^2.0.2",
     "@nestjs/axios": "^4.0.0",

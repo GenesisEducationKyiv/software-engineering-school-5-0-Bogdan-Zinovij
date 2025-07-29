@@ -5,6 +5,7 @@ import { WeatherGatewayController } from './weather/weather-gateway.controller';
 import { SubscriptionGatewayController } from './subscription/subscription-gateway.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerModule } from '@libs/logger';
+import { MetricsModule } from '@libs/metrics';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { LoggerModule } from '@libs/logger';
       rootPath: join(__dirname, '..', 'public'),
     }),
     LoggerModule,
+    MetricsModule,
     ClientsModule.register([
       {
         name: 'WEATHER_PACKAGE',
