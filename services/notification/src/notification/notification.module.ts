@@ -5,9 +5,10 @@ import { EventBus } from 'src/common/event-bus/domain/event-bus.abstract';
 import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-bus';
 import { NotificationEventSubscriberImpl } from './application/event-subscriber/notification-event-subscriber.impl';
 import { LoggerModule } from '@libs/logger';
+import { MetricsModule } from '@libs/metrics';
 
 @Module({
-  imports: [MailModule, LoggerModule],
+  imports: [MailModule, LoggerModule, MetricsModule],
   providers: [
     NotificationService,
     KafkaEventBus,

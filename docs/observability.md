@@ -4,7 +4,7 @@
 
 The system uses centralized structured logging with `LokiLogger` and Winston. Logs are enriched with contextual tags (`NotificationService`, `ApiGateway`, `WeatherProvider`...) and categorized by levels: `info`, `debug`, `error`.
 
-### Alerts
+### Log-based Alerts
 
 - **High error rate on external weather providers**
 
@@ -24,12 +24,6 @@ The system uses centralized structured logging with `LokiLogger` and Winston. Lo
 
 - **Confirmations not followed by events**
   - Check for `confirm succeeded` without a following `subscription-confirmed` event log (future: via metrics). Helps spot broken event chain.
-
-### TODO
-
-Metrics-based alerts will be added once Prometheus metrics are exposed across all services.
-
----
 
 ## 2. Log Retention Policy
 
@@ -51,3 +45,28 @@ Metrics-based alerts will be added once Prometheus metrics are exposed across al
 
 - Logs are not manually deleted.
 - Expiration is enforced at the backend level at Loki config.
+
+## 3. Metrics-based Alerting
+
+The service exposes core Prometheus metrics via `libs/metrics`:
+
+- `http_requests_total` (labels: route, method, statusCode)  
+  Track API traffic and error rates per route.  
+  **Alert:** Trigger if 5xx responses exceed threshold for a specific route within N minutes.
+
+- `email_sent_total` / `email_failed_total`  
+  Monitor success/failure ratio of outbound emails.  
+  **Alert:** Trigger if `email_failed_total` increases rapidly or failure rate > 5%.
+
+- `subscriptions_created_total` / `subscriptions_confirmed_total` / `subscriptions_cancelled_total`  
+  Monitor subscription lifecycle.  
+  **Alert:**
+
+  - Sudden drop in `subscriptions_confirmed_total` with stable `subscriptions_created_total` => possible confirmation flow issue.
+  - Sudden spike in `subscriptions_cancelled_total` => potential quality issue.
+
+- `weather_cache_hit_total` / `weather_cache_miss_total`  
+  Monitor cache effectiveness for weather data.  
+  **Alert:** High `miss` ratio indicates degraded cache or TTL misconfiguration.
+
+Retention of metrics is handled by Prometheus
