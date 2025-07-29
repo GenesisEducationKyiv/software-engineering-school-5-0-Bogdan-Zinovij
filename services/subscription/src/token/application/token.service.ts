@@ -3,17 +3,23 @@ import { v4 as uuidv4, validate as isUuid } from 'uuid';
 import { Token } from '../domain/token.domain';
 import { TokenRepository } from '../domain/token.repository.interface';
 import { TokenErrorCode } from '../constants/token.errors';
+import { LoggerPort } from '@libs/logger';
 
 @Injectable()
 export class TokenService {
   constructor(
     @Inject('TokenRepository')
     private readonly tokenRepository: TokenRepository,
+    private readonly logger: LoggerPort,
   ) {}
 
   async create(): Promise<Token> {
     const value = uuidv4();
-    return this.tokenRepository.create(value);
+    const token = await this.tokenRepository.create(value);
+
+    this.logger.debug(`Token created: ${token.value}`, 'TokenService');
+
+    return token;
   }
 
   async findByValue(value: string): Promise<Token> {

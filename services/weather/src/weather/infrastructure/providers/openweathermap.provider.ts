@@ -5,7 +5,7 @@ import { HttpService } from '@nestjs/axios';
 import { lastValueFrom } from 'rxjs';
 import { OpenWeatherMapResponse } from './types/openweathermap-response.type';
 import { buildOpenWeatherMapUrl } from './helpers/weather-url.builder';
-import { WeatherLogger } from '../logger/weather.logger';
+import { LoggerPort } from '@libs/logger';
 
 @Injectable()
 export class OpenWeatherMapProvider implements WeatherProvider {
@@ -15,7 +15,7 @@ export class OpenWeatherMapProvider implements WeatherProvider {
     private readonly httpService: HttpService,
     @Inject('OPENWEATHER_API_CONFIG')
     private readonly config: { baseUrl: string; apiKey: string },
-    private readonly logger: WeatherLogger,
+    private readonly logger: LoggerPort,
   ) {}
 
   async getWeather(city: string): Promise<WeatherData> {
@@ -33,9 +33,9 @@ export class OpenWeatherMapProvider implements WeatherProvider {
       // api error imitation
       // throw new Error('Server unavailable');
 
-      this.logger.log(
-        this.PROVIDER_NAME,
-        `Response: ${JSON.stringify(response.data)}`,
+      this.logger.info(
+        `WeatherAPI response for ${city}: ${JSON.stringify(response.data)}`,
+        'WeatherProvider',
       );
 
       const data = response.data;
@@ -46,9 +46,11 @@ export class OpenWeatherMapProvider implements WeatherProvider {
         description: data.weather[0].description,
       };
     } catch (error) {
-      this.logger.log(
-        this.PROVIDER_NAME,
-        `Error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`,
+      this.logger.error(
+        `WeatherAPI failed for ${city}`,
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
+        error?.stack,
+        'WeatherProvider',
       );
       throw error;
     }

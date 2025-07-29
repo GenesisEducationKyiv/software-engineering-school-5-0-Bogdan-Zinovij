@@ -13,9 +13,10 @@ import { WeatherLogger } from './infrastructure/logger/weather.logger';
 import { MetricsModule } from 'src/monitoring/metrics.module';
 import { CacheModule } from 'src/cache/cache.module';
 import { WeatherGrpcController } from './presentation/controllers/weather.grpc';
+import { LoggerModule } from '@libs/logger';
 
 @Module({
-  imports: [HttpModule, ConfigModule, CacheModule, MetricsModule],
+  imports: [HttpModule, ConfigModule, CacheModule, MetricsModule, LoggerModule],
   controllers: [/*WeatherController*/ WeatherGrpcController],
   providers: [
     WeatherService,

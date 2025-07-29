@@ -4,12 +4,14 @@ import { join } from 'path';
 import { WeatherGatewayController } from './weather/weather-gateway.controller';
 import { SubscriptionGatewayController } from './subscription/subscription-gateway.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { LoggerModule } from '@libs/logger';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
     }),
+    LoggerModule,
     ClientsModule.register([
       {
         name: 'WEATHER_PACKAGE',
