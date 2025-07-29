@@ -23,6 +23,7 @@ interface WeatherServiceGrpc {
 @Controller('weather')
 export class WeatherGatewayController {
   private weatherService: WeatherServiceGrpc;
+  private readonly context = 'ApiGateway';
 
   constructor(
     @Inject('WEATHER_PACKAGE') private client: ClientGrpc,
@@ -39,7 +40,7 @@ export class WeatherGatewayController {
   async getWeather(@Query('city') city: string) {
     this.logger.debug(
       `Received weather request for city: ${city}`,
-      'ApiGateway',
+      this.context,
     );
 
     if (!city) {
@@ -50,7 +51,7 @@ export class WeatherGatewayController {
       const response$ = this.weatherService.getCurrentWeather({ city });
       const result = await lastValueFrom(response$);
 
-      this.logger.info(`Weather data fetched for ${city}`, 'ApiGateway');
+      this.logger.info(`Weather data fetched for ${city}`, this.context);
       this.metrics.incHttpRequests('/weather', 'GET', 200);
 
       return result;
@@ -58,7 +59,7 @@ export class WeatherGatewayController {
       this.logger.error(
         `Failed to get weather for ${city}`,
         err?.stack,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests('/weather', 'GET', err.code ?? 500);
 

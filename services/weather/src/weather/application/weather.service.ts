@@ -9,6 +9,7 @@ import { SampleLogger } from '@libs/logger';
 @Injectable()
 export class WeatherService {
   private readonly cacheLoggerSampler = new SampleLogger(100);
+  private readonly context = 'WeatherService';
 
   constructor(
     private readonly client: WeatherClient,
@@ -24,7 +25,7 @@ export class WeatherService {
 
     if (cached) {
       if (shouldLog) {
-        this.logger.debug(`Cache HIT for ${city}`, 'WeatherService');
+        this.logger.debug(`Cache HIT for ${city}`, this.context);
       }
       this.metrics.incWeatherCacheHit();
 
@@ -34,7 +35,7 @@ export class WeatherService {
     if (shouldLog) {
       this.logger.debug(
         `Cache MISS for ${city}, fetching from providers`,
-        'WeatherService',
+        this.context,
       );
     }
     this.metrics.incWeatherCacheMiss();
@@ -42,10 +43,7 @@ export class WeatherService {
     const weather = await this.client.getWeather(city);
     await this.cache.set<Weather>(cacheKey, weather, 3600);
 
-    this.logger.info(
-      `Weather for ${city} fetched and cached`,
-      'WeatherService',
-    );
+    this.logger.info(`Weather for ${city} fetched and cached`, this.context);
 
     return weather;
   }

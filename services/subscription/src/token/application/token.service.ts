@@ -7,6 +7,8 @@ import { LoggerPort } from '@libs/logger';
 
 @Injectable()
 export class TokenService {
+  private readonly context = 'TokenService';
+
   constructor(
     @Inject('TokenRepository')
     private readonly tokenRepository: TokenRepository,
@@ -17,7 +19,7 @@ export class TokenService {
     const value = uuidv4();
     const token = await this.tokenRepository.create(value);
 
-    this.logger.debug(`Token created: ${token.value}`, 'TokenService');
+    this.logger.debug(`Token created: ${token.value}`, this.context);
 
     return token;
   }

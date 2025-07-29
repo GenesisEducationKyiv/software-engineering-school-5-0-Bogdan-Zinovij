@@ -16,6 +16,8 @@ import { MetricsService } from '@libs/metrics';
 
 @Injectable()
 export class SubscriptionService {
+  private readonly context = 'SubscriptionService';
+
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
@@ -29,7 +31,7 @@ export class SubscriptionService {
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
     this.logger.info(
       `New subscription attempt: ${dto.email} -> ${dto.city} (${dto.frequency})`,
-      'SubscriptionService',
+      this.context,
     );
 
     const existing = await this.subscriptionRepository.find({
@@ -57,7 +59,7 @@ export class SubscriptionService {
 
     this.logger.info(
       `Subscription created, confirmation email event published`,
-      'SubscriptionService',
+      this.context,
     );
     this.metrics.incSubscriptionCreated();
 
@@ -67,7 +69,7 @@ export class SubscriptionService {
   async confirm(tokenValue: string): Promise<Subscription> {
     this.logger.info(
       `Confirming subscription with token ${tokenValue}`,
-      'SubscriptionService',
+      this.context,
     );
 
     const token = await this.tokenService.findByValue(tokenValue);
@@ -101,7 +103,7 @@ export class SubscriptionService {
 
     this.logger.info(
       `Subscription confirmed for ${subscription.email}`,
-      'SubscriptionService',
+      this.context,
     );
     this.metrics.incSubscriptionConfirmed();
 
@@ -111,7 +113,7 @@ export class SubscriptionService {
   async unsubscribe(tokenValue: string): Promise<void> {
     this.logger.info(
       `Unsubscribe request for token ${tokenValue}`,
-      'SubscriptionService',
+      this.context,
     );
 
     const token = await this.tokenService.findByValue(tokenValue);
@@ -132,10 +134,7 @@ export class SubscriptionService {
       new UnsubscribedEvent(subscription.email),
     );
 
-    this.logger.info(
-      `Unsubscribed: ${subscription.email}`,
-      'SubscriptionService',
-    );
+    this.logger.info(`Unsubscribed: ${subscription.email}`, this.context);
     this.metrics.incSubscriptionCancelled();
   }
 
@@ -150,7 +149,7 @@ export class SubscriptionService {
   ): Promise<void> {
     this.logger.debug(
       `Sending weather updates to ${frequency} subscribers`,
-      'SubscriptionService',
+      this.context,
     );
 
     const subscribers =
@@ -177,7 +176,7 @@ export class SubscriptionService {
 
     this.logger.info(
       `Weather update events published for ${frequency} subscribers`,
-      'SubscriptionService',
+      this.context,
     );
   }
 }

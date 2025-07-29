@@ -10,6 +10,8 @@ import { MetricsService } from '@libs/metrics';
 
 @Injectable()
 export class NotificationService {
+  private readonly context = 'NotificationService';
+
   constructor(
     private readonly mailService: MailSender,
     private readonly logger: LoggerPort,
@@ -21,7 +23,7 @@ export class NotificationService {
 
     this.logger.info(
       `Sending confirmation email to ${data.email}`,
-      'NotificationService',
+      this.context,
     );
 
     await this.mailService
@@ -43,7 +45,7 @@ export class NotificationService {
 
     this.logger.info(
       `Sending subscription confirmed email to ${data.email} for ${data.city} (${data.frequency})`,
-      'NotificationService',
+      this.context,
     );
 
     await this.mailService
@@ -64,7 +66,7 @@ export class NotificationService {
   async sendUnsubscribeSuccess(email: string): Promise<void> {
     this.logger.info(
       `Sending unsubscribe success email to ${email}`,
-      'NotificationService',
+      this.context,
     );
 
     await this.mailService
@@ -84,7 +86,7 @@ export class NotificationService {
 
     this.logger.info(
       `Sending weather update email to ${data.email} for ${data.city}`,
-      'NotificationService',
+      this.context,
     );
 
     await this.mailService

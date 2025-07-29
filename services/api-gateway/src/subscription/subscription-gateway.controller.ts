@@ -34,6 +34,7 @@ interface SubscriptionGrpcService {
 @Controller('subscription')
 export class SubscriptionGatewayController {
   private subscriptionService: SubscriptionGrpcService;
+  private readonly context = 'ApiGateway';
 
   constructor(
     @Inject('SUBSCRIPTION_PACKAGE') private client: ClientGrpc,
@@ -53,21 +54,21 @@ export class SubscriptionGatewayController {
   async subscribe(@Body() dto: CreateSubscriptionDto): Promise<void> {
     this.logger.info(
       `Received subscription request for ${dto.email} in ${dto.city}`,
-      'ApiGateway',
+      this.context,
     );
 
     try {
       await lastValueFrom(this.subscriptionService.subscribe(dto));
       this.logger.info(
         `Subscription request sent to SubscriptionService`,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests('/subscription/subscribe', 'POST', 200);
     } catch (err: any) {
       this.logger.error(
         `Subscription request failed`,
         err?.stack,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests(
         '/subscription/subscribe',
@@ -93,21 +94,21 @@ export class SubscriptionGatewayController {
   async confirm(@Param('token') token: string): Promise<void> {
     this.logger.info(
       `Received confirm request for token ${token}`,
-      'ApiGateway',
+      this.context,
     );
 
     try {
       await lastValueFrom(this.subscriptionService.confirm({ token }));
       this.logger.info(
         `SubscriptionService.confirm succeeded for token ${token}`,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests('/subscription/confirm/:token', 'GET', 200);
     } catch (err: any) {
       this.logger.error(
         `SubscriptionService.confirm failed`,
         err?.stack,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests(
         '/subscription/confirm/:token',
@@ -134,14 +135,14 @@ export class SubscriptionGatewayController {
   async unsubscribe(@Param('token') token: string): Promise<void> {
     this.logger.info(
       `Received unsubscribe request for token ${token}`,
-      'ApiGateway',
+      this.context,
     );
 
     try {
       await lastValueFrom(this.subscriptionService.unsubscribe({ token }));
       this.logger.info(
         `SubscriptionService.unsubscribe succeeded for token ${token}`,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests(
         '/subscription/unsubscribe/:token',
@@ -152,7 +153,7 @@ export class SubscriptionGatewayController {
       this.logger.error(
         `SubscriptionService.unsubscribe failed`,
         err?.stack,
-        'ApiGateway',
+        this.context,
       );
       this.metrics.incHttpRequests(
         '/subscription/unsubscribe/:token',
@@ -179,7 +180,7 @@ export class SubscriptionGatewayController {
   async test(): Promise<void> {
     this.logger.info(
       `Received test weather request (frequency: daily)`,
-      'ApiGateway',
+      this.context,
     );
 
     try {
@@ -188,13 +189,13 @@ export class SubscriptionGatewayController {
       );
       this.logger.info(
         `SubscriptionService.sendTestWeather succeeded`,
-        'ApiGateway',
+        this.context,
       );
     } catch (err: any) {
       this.logger.error(
         `SubscriptionService.sendTestWeather failed`,
         err?.stack,
-        'ApiGateway',
+        this.context,
       );
 
       const code = err.code;
