@@ -10,6 +10,10 @@
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
+    "paths": {
+      "@libs/logger": ["../../libs/logger/dist"],
+      "@libs/logger/*": ["../../libs/logger/dist/*"]
+    },
     "incremental": true,
     "skipLibCheck": true,
     "strictNullChecks": true,
