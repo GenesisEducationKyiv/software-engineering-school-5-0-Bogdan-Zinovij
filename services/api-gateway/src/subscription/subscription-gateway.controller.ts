@@ -22,7 +22,6 @@ import { status } from '@grpc/grpc-js';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
 import { LoggerPort } from '@libs/logger';
-import { GatewayMetricsService } from '@libs/metrics';
 
 interface SubscriptionGrpcService {
   subscribe(dto: CreateSubscriptionDto): any;
@@ -39,7 +38,6 @@ export class SubscriptionGatewayController {
   constructor(
     @Inject('SUBSCRIPTION_PACKAGE') private client: ClientGrpc,
     private readonly logger: LoggerPort,
-    private readonly metrics: GatewayMetricsService,
   ) {}
 
   onModuleInit() {
@@ -63,17 +61,11 @@ export class SubscriptionGatewayController {
         `Subscription request sent to SubscriptionService`,
         this.context,
       );
-      this.metrics.incHttpRequests('/subscription/subscribe', 'POST', 200);
     } catch (err: any) {
       this.logger.error(
         `Subscription request failed`,
         err?.stack,
         this.context,
-      );
-      this.metrics.incHttpRequests(
-        '/subscription/subscribe',
-        'POST',
-        err.code ?? 500,
       );
 
       const code = err.code;
@@ -103,17 +95,11 @@ export class SubscriptionGatewayController {
         `SubscriptionService.confirm succeeded for token ${token}`,
         this.context,
       );
-      this.metrics.incHttpRequests('/subscription/confirm/:token', 'GET', 200);
     } catch (err: any) {
       this.logger.error(
         `SubscriptionService.confirm failed`,
         err?.stack,
         this.context,
-      );
-      this.metrics.incHttpRequests(
-        '/subscription/confirm/:token',
-        'GET',
-        err.code ?? 500,
       );
 
       const code = err.code;
@@ -144,21 +130,11 @@ export class SubscriptionGatewayController {
         `SubscriptionService.unsubscribe succeeded for token ${token}`,
         this.context,
       );
-      this.metrics.incHttpRequests(
-        '/subscription/unsubscribe/:token',
-        'GET',
-        200,
-      );
     } catch (err: any) {
       this.logger.error(
         `SubscriptionService.unsubscribe failed`,
         err?.stack,
         this.context,
-      );
-      this.metrics.incHttpRequests(
-        '/subscription/unsubscribe/:token',
-        'GET',
-        err.code ?? 500,
       );
 
       const code = err.code;

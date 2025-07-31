@@ -5,7 +5,8 @@ import { WeatherGatewayController } from './weather/weather-gateway.controller';
 import { SubscriptionGatewayController } from './subscription/subscription-gateway.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerModule } from '@libs/logger';
-import { MetricsModule } from '@libs/metrics';
+import { HttpMetricsInterceptor, MetricsModule } from '@libs/metrics';
+import { APP_INTERCEPTOR } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -34,6 +35,12 @@ import { MetricsModule } from '@libs/metrics';
         },
       },
     ]),
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpMetricsInterceptor,
+    },
   ],
   controllers: [WeatherGatewayController, SubscriptionGatewayController],
 })
