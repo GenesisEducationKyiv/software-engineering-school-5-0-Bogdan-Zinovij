@@ -26,14 +26,16 @@ export class NotificationService {
       this.context,
     );
 
-    await this.mailService
-      .sendMail({
+    try {
+      await this.mailService.sendMail({
         receiverEmail: data.email,
         subject: MailTemplates.CONFIRM_SUBSCRIPTION.subject,
         html: MailTemplates.CONFIRM_SUBSCRIPTION.html(confirmLink, data.token),
-      })
-      .then(() => this.metrics.incEmailSent())
-      .catch(() => this.metrics.incEmailFailed());
+      });
+      this.metrics.incEmailSent();
+    } catch {
+      this.metrics.incEmailFailed();
+    }
   }
 
   async sendSubscriptionConfirmedEmail(
@@ -42,14 +44,13 @@ export class NotificationService {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
       data.token,
     );
-
     this.logger.info(
       `Sending subscription confirmed email to ${data.email} for ${data.city} (${data.frequency})`,
       this.context,
     );
 
-    await this.mailService
-      .sendMail({
+    try {
+      await this.mailService.sendMail({
         receiverEmail: data.email,
         subject: MailTemplates.SUBSCRIPTION_CONFIRMED.subject,
         html: MailTemplates.SUBSCRIPTION_CONFIRMED.html(
@@ -58,9 +59,11 @@ export class NotificationService {
           data.weather,
           unsubscribeLink,
         ),
-      })
-      .then(() => this.metrics.incEmailSent())
-      .catch(() => this.metrics.incEmailFailed());
+      });
+      this.metrics.incEmailSent();
+    } catch {
+      this.metrics.incEmailFailed();
+    }
   }
 
   async sendUnsubscribeSuccess(email: string): Promise<void> {
@@ -69,28 +72,29 @@ export class NotificationService {
       this.context,
     );
 
-    await this.mailService
-      .sendMail({
+    try {
+      await this.mailService.sendMail({
         receiverEmail: email,
         subject: MailTemplates.UNSUBSCRIBE_SUCCESS.subject,
         html: MailTemplates.UNSUBSCRIBE_SUCCESS.html(),
-      })
-      .then(() => this.metrics.incEmailSent())
-      .catch(() => this.metrics.incEmailFailed());
+      });
+      this.metrics.incEmailSent();
+    } catch {
+      this.metrics.incEmailFailed();
+    }
   }
 
   async sendWeatherUpdate(data: WeatherUpdateEmailDto): Promise<void> {
     const unsubscribeLink = SubscriptionEmailLinkHelper.getUnsubscribeLink(
       data.token,
     );
-
     this.logger.info(
       `Sending weather update email to ${data.email} for ${data.city}`,
       this.context,
     );
 
-    await this.mailService
-      .sendMail({
+    try {
+      await this.mailService.sendMail({
         receiverEmail: data.email,
         subject: MailTemplates.WEATHER_UPDATE.subject(data.city),
         html: MailTemplates.WEATHER_UPDATE.html(
@@ -98,8 +102,10 @@ export class NotificationService {
           data.weather,
           unsubscribeLink,
         ),
-      })
-      .then(() => this.metrics.incEmailSent())
-      .catch(() => this.metrics.incEmailFailed());
+      });
+      this.metrics.incEmailSent();
+    } catch {
+      this.metrics.incEmailFailed();
+    }
   }
 }
