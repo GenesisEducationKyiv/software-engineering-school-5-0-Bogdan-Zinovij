@@ -34,7 +34,7 @@ export class OpenWeatherMapProvider implements WeatherProvider {
       // throw new Error('Server unavailable');
 
       this.logger.info(
-        `WeatherAPI response for ${city}: ${JSON.stringify(response.data)}`,
+        `${this.PROVIDER_NAME} response for ${city}: ${JSON.stringify(response.data)}`,
         'WeatherProvider',
       );
 
@@ -47,7 +47,7 @@ export class OpenWeatherMapProvider implements WeatherProvider {
       };
     } catch (error) {
       this.logger.error(
-        `WeatherAPI failed for ${city}`,
+        `${this.PROVIDER_NAME} failed for ${city}`,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         error?.stack,
         'WeatherProvider',

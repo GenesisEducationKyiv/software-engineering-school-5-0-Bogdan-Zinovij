@@ -31,7 +31,7 @@ export class WeatherApiProvider implements WeatherProvider {
       );
 
       this.logger.info(
-        `WeatherAPI response for ${city}: ${JSON.stringify(response.data)}`,
+        `${this.PROVIDER_NAME} response for ${city}: ${JSON.stringify(response.data)}`,
         'WeatherProvider',
       );
 
@@ -44,7 +44,7 @@ export class WeatherApiProvider implements WeatherProvider {
       };
     } catch (error) {
       this.logger.error(
-        `WeatherAPI failed for ${city}`,
+        `${this.PROVIDER_NAME} failed for ${city}`,
         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
         error?.stack,
         'WeatherProvider',
