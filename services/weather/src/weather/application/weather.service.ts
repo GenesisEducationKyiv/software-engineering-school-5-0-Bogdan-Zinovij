@@ -4,12 +4,11 @@ import { WeatherClient } from './weather-client';
 import { CacheService } from '../../cache/domain/cache.service';
 import { LoggerPort } from '@libs/logger';
 import { WeatherMetricsService } from '@libs/metrics';
-import { SampleLogger } from '@libs/logger';
 
 @Injectable()
 export class WeatherService {
-  private readonly cacheLoggerSampler = new SampleLogger(100);
   private readonly context = 'WeatherService';
+  private readonly logSampleRate = 100;
 
   constructor(
     private readonly client: WeatherClient,
@@ -21,23 +20,23 @@ export class WeatherService {
   async getCurrentWeather(city: string): Promise<Weather> {
     const cacheKey = `weather:${city.toLowerCase()}`;
     const cached = await this.cache.get<Weather>(cacheKey);
-    const shouldLog = this.cacheLoggerSampler.shouldLog();
 
     if (cached) {
-      if (shouldLog) {
-        this.logger.debug(`Cache HIT for ${city}`, this.context);
-      }
+      this.logger.debug(
+        `Cache HIT for ${city}`,
+        this.context,
+        this.logSampleRate,
+      );
       this.metrics.incWeatherCacheHit();
 
       return cached;
     }
 
-    if (shouldLog) {
-      this.logger.debug(
-        `Cache MISS for ${city}, fetching from providers`,
-        this.context,
-      );
-    }
+    this.logger.debug(
+      `Cache MISS for ${city}, fetching from providers`,
+      this.context,
+      this.logSampleRate,
+    );
     this.metrics.incWeatherCacheMiss();
 
     const weather = await this.client.getWeather(city);

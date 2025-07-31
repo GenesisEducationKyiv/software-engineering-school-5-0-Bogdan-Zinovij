@@ -2,6 +2,7 @@ import { Injectable, Scope } from '@nestjs/common';
 import { LoggerPort } from '../domain/logger.port';
 import { createLogger, transports, format } from 'winston';
 import LokiTransport from 'winston-loki';
+import { SampleLogger } from '../utils/sample-logger.util';
 
 @Injectable({ scope: Scope.TRANSIENT })
 export class LokiLogger implements LoggerPort {
@@ -20,11 +21,15 @@ export class LokiLogger implements LoggerPort {
     ],
   });
 
-  info(message: string, context?: string): void {
+  private readonly sampleLoggers = new Map<string, SampleLogger>();
+
+  info(message: string, context?: string, sampleRate?: number): void {
+    if (sampleRate && !this.shouldSample(message, context, sampleRate)) return;
     this.logger.info(this.formatMessage(message, context));
   }
 
-  debug(message: string, context?: string): void {
+  debug(message: string, context?: string, sampleRate?: number): void {
+    if (sampleRate && !this.shouldSample(message, context, sampleRate)) return;
     this.logger.debug(this.formatMessage(message, context));
   }
 
@@ -39,5 +44,17 @@ export class LokiLogger implements LoggerPort {
 
   private formatMessage(message: string, context?: string): string {
     return context ? `[${context}] ${message}` : message;
+  }
+
+  private shouldSample(
+    message: string,
+    context = 'default',
+    sampleRate: number
+  ): boolean {
+    const key = `${context}::${message}`;
+    if (!this.sampleLoggers.has(key)) {
+      this.sampleLoggers.set(key, new SampleLogger(sampleRate));
+    }
+    return this.sampleLoggers.get(key)!.shouldLog();
   }
 }

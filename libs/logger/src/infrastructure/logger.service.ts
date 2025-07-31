@@ -1,6 +1,7 @@
 import { Injectable, Scope } from '@nestjs/common';
 import { createLogger, format, transports } from 'winston';
 import { LoggerPort } from '../domain/logger.port';
+import { SampleLogger } from '../utils/sample-logger.util';
 
 const { combine, timestamp, printf, colorize } = format;
 
@@ -16,11 +17,15 @@ export class AppLogger implements LoggerPort {
     transports: [new transports.Console()],
   });
 
-  info(message: string, context?: string): void {
+  private readonly sampleLoggers = new Map<string, SampleLogger>();
+
+  info(message: string, context?: string, sampleRate?: number): void {
+    if (sampleRate && !this.shouldSample(message, context, sampleRate)) return;
     this.logger.info(this.formatMessage(message, context));
   }
 
-  debug(message: string, context?: string): void {
+  debug(message: string, context?: string, sampleRate?: number): void {
+    if (sampleRate && !this.shouldSample(message, context, sampleRate)) return;
     this.logger.debug(this.formatMessage(message, context));
   }
 
@@ -35,5 +40,17 @@ export class AppLogger implements LoggerPort {
 
   private formatMessage(message: string, context?: string): string {
     return context ? `[${context}] ${message}` : message;
+  }
+
+  private shouldSample(
+    message: string,
+    context = 'default',
+    sampleRate: number
+  ): boolean {
+    const key = `${context}::${message}`;
+    if (!this.sampleLoggers.has(key)) {
+      this.sampleLoggers.set(key, new SampleLogger(sampleRate));
+    }
+    return this.sampleLoggers.get(key)!.shouldLog();
   }
 }
