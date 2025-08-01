@@ -12,7 +12,7 @@ import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
 import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
 import { LoggerPort } from '@libs/logger';
-import { SubscriptionMetricsService } from '@libs/metrics';
+import { SubscriptionMetricsService } from 'src/metrics/domain/subscription-metrics.service';
 
 @Injectable()
 export class SubscriptionService {

@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { HttpModule } from '@nestjs/axios';
 import { ConfigModule } from '@nestjs/config';
-//import { WeatherController } from './presentation/controllers/weather.controller';
 import { WeatherService } from './application/weather.service';
 import { AppConfigService } from 'src/config/app-config.service';
 import { WeatherClient } from './application/weather-client';
@@ -13,11 +12,17 @@ import { WeatherLogger } from './infrastructure/logger/weather.logger';
 import { CacheModule } from 'src/cache/cache.module';
 import { WeatherGrpcController } from './presentation/controllers/weather.grpc';
 import { LoggerModule } from '@libs/logger';
-import { MetricsModule } from '@libs/metrics';
+import { WeatherMetricsModule } from 'src/metrics/weather-metrics.module';
 
 @Module({
-  imports: [HttpModule, ConfigModule, CacheModule, LoggerModule, MetricsModule],
-  controllers: [/*WeatherController*/ WeatherGrpcController],
+  imports: [
+    HttpModule,
+    ConfigModule,
+    CacheModule,
+    LoggerModule,
+    WeatherMetricsModule,
+  ],
+  controllers: [WeatherGrpcController],
   providers: [
     WeatherService,
     AppConfigService,

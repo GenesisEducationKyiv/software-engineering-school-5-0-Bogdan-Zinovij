@@ -20,9 +20,8 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
-    "@libs/logger": "file:../../libs/logger",
-    "@libs/metrics": "file:../../libs/metrics",
     "@grpc/grpc-js": "^1.13.4",
+    "@libs/logger": "file:../../libs/logger",
     "@nestjs/axios": "^4.0.0",
     "@nestjs/cache-manager": "^3.0.1",
     "@nestjs/common": "^11.1.3",

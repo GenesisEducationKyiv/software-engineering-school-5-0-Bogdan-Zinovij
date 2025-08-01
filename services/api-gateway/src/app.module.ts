@@ -5,8 +5,9 @@ import { WeatherGatewayController } from './weather/weather-gateway.controller';
 import { SubscriptionGatewayController } from './subscription/subscription-gateway.controller';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { LoggerModule } from '@libs/logger';
-import { HttpMetricsInterceptor, MetricsModule } from '@libs/metrics';
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { GatewayMetricsModule } from './metrics/gateway-metrics.module';
+import { HttpMetricsInterceptor } from './metrics/infrastructure/http-metrics.interceptor';
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
       rootPath: join(__dirname, '..', 'public'),
     }),
     LoggerModule,
-    MetricsModule,
+    GatewayMetricsModule,
     ClientsModule.register([
       {
         name: 'WEATHER_PACKAGE',

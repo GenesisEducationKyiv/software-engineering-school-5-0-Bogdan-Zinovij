@@ -6,7 +6,7 @@ import { ConfirmationEmailDto } from '../presentation/dto/confirmation-email.dto
 import { SubscriptionConfirmedEmailDto } from '../presentation/dto/subscription-confirmed-email.dto';
 import { WeatherUpdateEmailDto } from '../presentation/dto/weather-update-email.dto';
 import { LoggerPort } from '@libs/logger';
-import { NotificationMetricsService } from '@libs/metrics';
+import { NotificationMetricsService } from 'src/metrics/domain/notification-metrics.service';
 
 @Injectable()
 export class NotificationService {

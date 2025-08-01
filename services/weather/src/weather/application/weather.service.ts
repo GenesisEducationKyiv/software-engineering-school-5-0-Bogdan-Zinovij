@@ -3,7 +3,7 @@ import { Weather } from '../domain/weather.model';
 import { WeatherClient } from './weather-client';
 import { CacheService } from '../../cache/domain/cache.service';
 import { LoggerPort } from '@libs/logger';
-import { WeatherMetricsService } from '@libs/metrics';
+import { WeatherMetricsService } from 'src/metrics/domain/weather-metrics.service';
 
 @Injectable()
 export class WeatherService {

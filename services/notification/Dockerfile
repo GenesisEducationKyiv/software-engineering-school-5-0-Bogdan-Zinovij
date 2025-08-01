@@ -3,13 +3,8 @@ FROM node:20
 WORKDIR /usr/src/app
 
 COPY libs/logger ./libs/logger
-COPY libs/metrics ./libs/metrics
 
 WORKDIR /usr/src/app/libs/logger
-RUN npm install
-RUN npm run build
-
-WORKDIR /usr/src/app/libs/metrics
 RUN npm install
 RUN npm run build
 
