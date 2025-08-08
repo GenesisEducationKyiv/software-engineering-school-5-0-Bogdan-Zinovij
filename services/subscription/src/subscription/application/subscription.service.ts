@@ -6,16 +6,20 @@ import { TokenService } from 'src/token/application/token.service';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
 import { SubscriptionErrorCode } from '../constants/subscription.errors';
 import { WeatherGrpcClientService } from '../infrastructure/weather/weather-grpc.client';
-import { NotificationGrpcClientService } from '../infrastructure/notification/notification-grpc.client';
+import { ConfirmationEmailRequestedEvent } from 'src/libs/kafka/dtos/confirmation-email-requested.event';
+import { SubscriptionConfirmedEvent } from 'src/libs/kafka/dtos/subscription-confirmed.event';
+import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
+import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
+import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
 
 @Injectable()
 export class SubscriptionService {
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
+    private readonly publisher: SubscriptionEventPublisher,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
-    private readonly notificationService: NotificationGrpcClientService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
@@ -38,10 +42,9 @@ export class SubscriptionService {
       tokenId: token.id,
     });
 
-    await this.notificationService.sendConfirmationEmail({
-      email: subscription.email,
-      token: token.value,
-    });
+    this.publisher.publishConfirmationEmail(
+      new ConfirmationEmailRequestedEvent(subscription.email, token.value),
+    );
 
     return subscription;
   }
@@ -66,13 +69,15 @@ export class SubscriptionService {
       subscription.city,
     );
 
-    await this.notificationService.sendSubscriptionConfirmedEmail({
-      email: subscription.email,
-      frequency: subscription.frequency,
-      city: subscription.city,
-      weather,
-      token: token.value,
-    });
+    this.publisher.publishSubscriptionConfirmed(
+      new SubscriptionConfirmedEvent(
+        subscription.email,
+        subscription.frequency,
+        subscription.city,
+        weather,
+        token.value,
+      ),
+    );
 
     return subscription;
   }
@@ -92,7 +97,9 @@ export class SubscriptionService {
     await this.subscriptionRepository.remove(subscription.id);
     await this.tokenService.remove(token.id);
 
-    await this.notificationService.sendUnsubscribeSuccess(subscription.email);
+    this.publisher.publishUnsubscribed(
+      new UnsubscribedEvent(subscription.email),
+    );
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -104,9 +111,6 @@ export class SubscriptionService {
   async sendWeatherToSubscribers(
     frequency: SubscriptionFrequencyEnum,
   ): Promise<void> {
-    // Test
-    // const subscribers = await this.subscriptionRepository.find({ frequency });
-
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
@@ -116,12 +120,14 @@ export class SubscriptionService {
 
         const token = await this.tokenService.findById(sub.tokenId);
 
-        await this.notificationService.sendWeatherUpdate({
-          email: sub.email,
-          city: sub.city,
-          weather,
-          token: token.value,
-        });
+        this.publisher.publishWeatherUpdate(
+          new WeatherUpdateReadyEvent(
+            sub.email,
+            sub.city,
+            weather,
+            token.value,
+          ),
+        );
       } catch (err) {
         console.error(`Failed to send weather to ${sub.email}:`, err);
       }

@@ -2,11 +2,12 @@ FROM node:20
 
 WORKDIR /usr/src/app
 
-COPY package*.json ./
-
+COPY services/notification/package*.json ./
 RUN npm install
 
-COPY . .
+COPY services/notification ./
+
+COPY libs ./src/libs
 
 RUN npm run build
 

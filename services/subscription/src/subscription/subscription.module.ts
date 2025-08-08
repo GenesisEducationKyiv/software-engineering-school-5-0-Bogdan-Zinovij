@@ -11,28 +11,42 @@ import { HttpModule } from '@nestjs/axios';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { join } from 'path';
 import { WeatherGrpcClientService } from './infrastructure/weather/weather-grpc.client';
-import { NotificationGrpcClientService } from './infrastructure/notification/notification-grpc.client';
 import { SubscriptionGrpcController } from './presentation/controllers/subscription-grpc.controller';
+import { SubscriptionEventPublisherImpl } from './application/event-publisher/subscription-event-publisher';
+import { SubscriptionEventPublisher } from './application/event-publisher/subscription-event-publisher.interface';
+import { EventBus } from 'src/common/event-bus/domain/event-bus.interface';
+import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-bus.service';
 
 @Module({
   imports: [
+    ClientsModule.register([
+      {
+        name: 'KAFKA_PRODUCER',
+        transport: Transport.KAFKA,
+        options: {
+          client: {
+            clientId: 'subscription',
+            brokers: ['kafka:9092'],
+            retry: {
+              retries: 5,
+              factor: 2,
+              initialRetryTime: 3000,
+            },
+          },
+          producer: {
+            allowAutoTopicCreation: true,
+          },
+        },
+      },
+    ]),
     ClientsModule.register([
       {
         name: 'WEATHER_PACKAGE',
         transport: Transport.GRPC,
         options: {
           package: 'weather',
-          protoPath: join(__dirname, '../../proto/weather.proto'),
+          protoPath: join(__dirname, '../libs/grpc/proto/weather.proto'),
           url: 'weather:50052',
-        },
-      },
-      {
-        name: 'NOTIFICATION_PACKAGE',
-        transport: Transport.GRPC,
-        options: {
-          package: 'notification',
-          protoPath: join(__dirname, '../../proto/notification.proto'),
-          url: 'notification:50051',
         },
       },
     ]),
@@ -46,7 +60,6 @@ import { SubscriptionGrpcController } from './presentation/controllers/subscript
   providers: [
     SubscriptionService,
     SubscriptionCronService,
-    NotificationGrpcClientService,
     WeatherGrpcClientService,
     {
       provide: 'SubscriptionRepository',
@@ -62,6 +75,14 @@ import { SubscriptionGrpcController } from './presentation/controllers/subscript
       provide: 'WEATHER_URL',
       inject: [ConfigService],
       useFactory: (config: ConfigService) => config.get<string>('WEATHER_URL'),
+    },
+    {
+      provide: SubscriptionEventPublisher,
+      useClass: SubscriptionEventPublisherImpl,
+    },
+    {
+      provide: EventBus,
+      useClass: KafkaEventBus,
     },
   ],
 })
