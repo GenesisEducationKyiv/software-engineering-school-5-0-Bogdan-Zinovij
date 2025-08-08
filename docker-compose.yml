@@ -1,4 +1,4 @@
-version: '3.9'
+version: "3.9"
 
 services:
   postgres:
@@ -10,11 +10,11 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: weatherdb
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -24,29 +24,76 @@ services:
     container_name: weather-redis
     restart: always
     ports:
-      - '6379:6379'
+      - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --save 60 1 --loglevel warning
 
-  app:
+  notification:
     build:
-      context: .
+      context: ./services/notification
       dockerfile: Dockerfile
-    container_name: weather-app
+    container_name: notification
+    ports:
+      - "3001:3001"
+      - "50051:50051"
+    env_file: ./services/notification/.env
+    environment:
+      API_GATEWAY_URL: http://localhost:3000
+
+  weather:
+    build:
+      context: ./services/weather
+      dockerfile: Dockerfile
+    container_name: weather
+    restart: always
+    depends_on:
+      redis:
+        condition: service_started
+    env_file: ./services/weather/.env
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3002:3002"
+      - "50052:50052"
+
+  subscription:
+    build:
+      context: ./services/subscription
+      dockerfile: Dockerfile
+    container_name: subscription
     restart: always
     depends_on:
       postgres:
         condition: service_healthy
-      redis:
+      notification:
         condition: service_started
-    env_file: .env
+      weather:
+        condition: service_started
+    env_file: ./services/subscription/.env
     environment:
       POSTGRES_HOST: postgres
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      NOTIFICATION_URL: http://notification:3001
+      WEATHER_URL: http://weather:3002
     ports:
-      - '3000:3000'
+      - "3003:3003"
+      - "50053:50053"
+
+  api-gateway:
+    build:
+      context: ./services/api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "3000:3000"
+    env_file: ./services/api-gateway/.env
+    environment:
+      WEATHER_SERVICE_URL: http://weather:3002
+      SUBSCRIPTION_SERVICE_URL: http://subscription:3003
+    depends_on:
+      - weather
+      - subscription
 
 volumes:
   postgres_data:
