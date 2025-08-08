@@ -27,7 +27,7 @@ export class NotificationModule implements OnModuleInit {
 
   async onModuleInit() {
     await this.eventBus.connect();
-    await this.subscriber.subscribeToAll();
+    this.subscriber.subscribeToAll();
     await this.eventBus.start();
   }
 }

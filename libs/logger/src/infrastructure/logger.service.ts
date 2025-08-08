@@ -6,7 +6,7 @@ import { SampleLogger } from '../utils/sample-logger.util';
 const { combine, timestamp, printf, colorize } = format;
 
 const customFormat = printf(({ level, message, timestamp }) => {
-  return `[${timestamp}] ${level}: ${message}`;
+  return `[${String(timestamp)}] ${String(level)}: ${String(message)}`;
 });
 
 @Injectable({ scope: Scope.TRANSIENT })

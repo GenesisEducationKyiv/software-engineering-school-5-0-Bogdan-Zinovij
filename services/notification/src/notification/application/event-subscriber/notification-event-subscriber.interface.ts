@@ -1,3 +1,3 @@
 export interface NotificationEventSubscriber {
-  subscribeToAll(): Promise<void>;
+  subscribeToAll(): void;
 }

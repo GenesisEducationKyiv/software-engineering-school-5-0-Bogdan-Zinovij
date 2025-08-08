@@ -3,9 +3,10 @@ import { WeatherService } from './weather.service';
 import { WeatherClient } from './weather-client';
 import { Weather } from '../domain/weather.model';
 import { WeatherData } from '../domain/types/weather-data.type';
-import { MetricsService } from '../../monitoring/domain/metrics.service';
 import { InMemoryCacheService } from '../../cache/infrastructure/in-memory-cache.service';
 import { CacheService } from '../../cache/domain/cache.service';
+import { WeatherMetricsService } from 'src/metrics/domain/weather-metrics.service';
+import { LoggerPort } from '@libs/logger';
 
 const mockWeatherData: WeatherData = {
   temperature: 20,
@@ -22,6 +23,13 @@ const mockMetricsService = {
   incWeatherCacheMiss: jest.fn(),
 };
 
+const mockLogger: jest.Mocked<LoggerPort> = {
+  info: jest.fn(),
+  debug: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+};
+
 describe('WeatherService (unit)', () => {
   let service: WeatherService;
   let client: MockWeatherClient;
@@ -33,7 +41,8 @@ describe('WeatherService (unit)', () => {
         WeatherService,
         { provide: WeatherClient, useClass: MockWeatherClient },
         { provide: CacheService, useClass: InMemoryCacheService },
-        { provide: MetricsService, useValue: mockMetricsService },
+        { provide: WeatherMetricsService, useValue: mockMetricsService },
+        { provide: LoggerPort, useValue: mockLogger },
       ],
     }).compile();
 

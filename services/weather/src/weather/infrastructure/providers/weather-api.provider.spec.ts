@@ -4,7 +4,7 @@ import { WeatherApiProvider } from './weatherapi.provider';
 import { HttpService } from '@nestjs/axios';
 import { of } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import { WeatherLogger } from '../logger/weather.logger';
+import { LoggerPort } from '@libs/logger';
 
 describe('WeatherApiProvider', () => {
   const config = { baseUrl: 'http://api.weatherapi.com', apiKey: 'test-key' };
@@ -23,12 +23,18 @@ describe('WeatherApiProvider', () => {
   } as AxiosResponse;
 
   let httpService: HttpService;
-  let logger: WeatherLogger;
+  let logger: jest.Mocked<LoggerPort>;
   let provider: WeatherApiProvider;
 
   beforeEach(() => {
     httpService = { get: jest.fn().mockReturnValue(of(mockResponse)) } as any;
-    logger = { log: jest.fn() } as any;
+    logger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
     provider = new WeatherApiProvider(httpService, config, logger);
   });
 
@@ -40,27 +46,24 @@ describe('WeatherApiProvider', () => {
       description: 'Clear',
     });
 
-    expect(logger.log).toHaveBeenCalledWith(
-      'weatherapi.com',
-      expect.stringMatching(/Response/),
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringMatching(/weatherapi\.com response for Odesa/),
+      'WeatherProvider',
     );
   });
 
   it('should log and throw on error', async () => {
-    httpService.get = jest.fn().mockReturnValueOnce({
-      toPromise: () => Promise.reject(new Error('API Error')),
+    const error = new Error('API Error');
+    httpService.get = jest.fn().mockImplementation(() => {
+      throw error;
     }) as any;
 
-    const erroringProvider = new WeatherApiProvider(
-      httpService,
-      config,
-      logger,
-    );
-    await expect(erroringProvider.getWeather(city)).rejects.toThrow();
+    await expect(provider.getWeather(city)).rejects.toThrow();
 
-    expect(logger.log).toHaveBeenCalledWith(
-      'weatherapi.com',
-      expect.stringMatching(/Error/),
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringMatching(/weatherapi\.com failed for Odesa/),
+      expect.stringMatching(/API Error/),
+      'WeatherProvider',
     );
   });
 });
