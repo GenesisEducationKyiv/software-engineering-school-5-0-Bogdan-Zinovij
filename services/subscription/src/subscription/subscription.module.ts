@@ -16,9 +16,13 @@ import { SubscriptionEventPublisherImpl } from './application/event-publisher/su
 import { SubscriptionEventPublisher } from './application/event-publisher/subscription-event-publisher.interface';
 import { EventBus } from 'src/common/event-bus/domain/event-bus.interface';
 import { KafkaEventBus } from 'src/common/event-bus/infrastructure/kafka-event-bus.service';
+import { LoggerModule } from '@libs/logger';
+import { SubscriptionMetricsModule } from 'src/metrics/subscription-metrics.module';
 
 @Module({
   imports: [
+    LoggerModule,
+    SubscriptionMetricsModule,
     ClientsModule.register([
       {
         name: 'KAFKA_PRODUCER',

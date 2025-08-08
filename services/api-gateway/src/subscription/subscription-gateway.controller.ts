@@ -21,6 +21,7 @@ import { lastValueFrom } from 'rxjs';
 import { status } from '@grpc/grpc-js';
 import { CreateSubscriptionDto } from './dto/create-subscription.dto';
 import { AnyFilesInterceptor } from '@nestjs/platform-express';
+import { LoggerPort } from '@libs/logger';
 
 interface SubscriptionGrpcService {
   subscribe(dto: CreateSubscriptionDto): any;
@@ -32,8 +33,12 @@ interface SubscriptionGrpcService {
 @Controller('subscription')
 export class SubscriptionGatewayController {
   private subscriptionService: SubscriptionGrpcService;
+  private readonly context = 'ApiGateway';
 
-  constructor(@Inject('SUBSCRIPTION_PACKAGE') private client: ClientGrpc) {}
+  constructor(
+    @Inject('SUBSCRIPTION_PACKAGE') private client: ClientGrpc,
+    private readonly logger: LoggerPort,
+  ) {}
 
   onModuleInit() {
     this.subscriptionService = this.client.getService<SubscriptionGrpcService>(
@@ -45,9 +50,24 @@ export class SubscriptionGatewayController {
   @UseInterceptors(AnyFilesInterceptor())
   @HttpCode(HttpStatus.OK)
   async subscribe(@Body() dto: CreateSubscriptionDto): Promise<void> {
+    this.logger.info(
+      `Received subscription request for ${dto.email} in ${dto.city}`,
+      this.context,
+    );
+
     try {
       await lastValueFrom(this.subscriptionService.subscribe(dto));
+      this.logger.info(
+        `Subscription request sent to SubscriptionService`,
+        this.context,
+      );
     } catch (err: any) {
+      this.logger.error(
+        `Subscription request failed`,
+        err?.stack,
+        this.context,
+      );
+
       const code = err.code;
       const message = err.details || 'Unknown error';
 
@@ -64,9 +84,24 @@ export class SubscriptionGatewayController {
 
   @Get('confirm/:token')
   async confirm(@Param('token') token: string): Promise<void> {
+    this.logger.info(
+      `Received confirm request for token ${token}`,
+      this.context,
+    );
+
     try {
       await lastValueFrom(this.subscriptionService.confirm({ token }));
+      this.logger.info(
+        `SubscriptionService.confirm succeeded for token ${token}`,
+        this.context,
+      );
     } catch (err: any) {
+      this.logger.error(
+        `SubscriptionService.confirm failed`,
+        err?.stack,
+        this.context,
+      );
+
       const code = err.code;
       const message = err.details || 'Unknown error';
 
@@ -84,9 +119,24 @@ export class SubscriptionGatewayController {
   @Get('unsubscribe/:token')
   @HttpCode(HttpStatus.OK)
   async unsubscribe(@Param('token') token: string): Promise<void> {
+    this.logger.info(
+      `Received unsubscribe request for token ${token}`,
+      this.context,
+    );
+
     try {
       await lastValueFrom(this.subscriptionService.unsubscribe({ token }));
+      this.logger.info(
+        `SubscriptionService.unsubscribe succeeded for token ${token}`,
+        this.context,
+      );
     } catch (err: any) {
+      this.logger.error(
+        `SubscriptionService.unsubscribe failed`,
+        err?.stack,
+        this.context,
+      );
+
       const code = err.code;
       const message = err.details || 'Unknown error';
 
@@ -104,11 +154,26 @@ export class SubscriptionGatewayController {
   @Get('test')
   @HttpCode(HttpStatus.OK)
   async test(): Promise<void> {
+    this.logger.info(
+      `Received test weather request (frequency: daily)`,
+      this.context,
+    );
+
     try {
       await lastValueFrom(
         this.subscriptionService.sendTestWeather({ frequency: 'daily' }),
       );
+      this.logger.info(
+        `SubscriptionService.sendTestWeather succeeded`,
+        this.context,
+      );
     } catch (err: any) {
+      this.logger.error(
+        `SubscriptionService.sendTestWeather failed`,
+        err?.stack,
+        this.context,
+      );
+
       const code = err.code;
       const message = err.details || 'Unknown error';
 

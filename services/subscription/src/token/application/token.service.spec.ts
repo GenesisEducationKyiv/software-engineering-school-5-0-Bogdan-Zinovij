@@ -5,6 +5,7 @@ import { TokenRepository } from '../domain/token.repository.interface';
 import { Token } from '../domain/token.domain';
 import { TokenErrorCode } from '../constants/token.errors';
 import { v4 as uuidv4 } from 'uuid';
+import { LoggerPort } from '@libs/logger';
 
 describe('TokenService', () => {
   let service: TokenService;
@@ -17,6 +18,13 @@ describe('TokenService', () => {
     remove: jest.fn(),
   };
 
+  const mockLogger: jest.Mocked<LoggerPort> = {
+    info: jest.fn(),
+    debug: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -24,6 +32,10 @@ describe('TokenService', () => {
         {
           provide: 'TokenRepository',
           useValue: mockRepo,
+        },
+        {
+          provide: LoggerPort,
+          useValue: mockLogger,
         },
       ],
     }).compile();

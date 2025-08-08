@@ -13,6 +13,7 @@ import { ClientGrpc } from '@nestjs/microservices';
 import { Inject } from '@nestjs/common';
 import { lastValueFrom } from 'rxjs';
 import { status } from '@grpc/grpc-js';
+import { LoggerPort } from '@libs/logger';
 
 interface WeatherServiceGrpc {
   getCurrentWeather(request: { city: string }): any;
@@ -21,8 +22,12 @@ interface WeatherServiceGrpc {
 @Controller('weather')
 export class WeatherGatewayController {
   private weatherService: WeatherServiceGrpc;
+  private readonly context = 'ApiGateway';
 
-  constructor(@Inject('WEATHER_PACKAGE') private client: ClientGrpc) {}
+  constructor(
+    @Inject('WEATHER_PACKAGE') private client: ClientGrpc,
+    private readonly logger: LoggerPort,
+  ) {}
 
   onModuleInit() {
     this.weatherService =
@@ -31,14 +36,29 @@ export class WeatherGatewayController {
 
   @Get()
   async getWeather(@Query('city') city: string) {
+    this.logger.debug(
+      `Received weather request for city: ${city}`,
+      this.context,
+    );
+
     if (!city) {
       throw new BadRequestException('City query parameter is required');
     }
 
     try {
       const response$ = this.weatherService.getCurrentWeather({ city });
-      return await lastValueFrom(response$);
+      const result = await lastValueFrom(response$);
+
+      this.logger.info(`Weather data fetched for ${city}`, this.context);
+
+      return result;
     } catch (err: any) {
+      this.logger.error(
+        `Failed to get weather for ${city}`,
+        err?.stack,
+        this.context,
+      );
+
       const code = err.code;
       const message = err.details || 'Unknown error';
 

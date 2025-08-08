@@ -4,7 +4,7 @@ import { OpenWeatherMapProvider } from './openweathermap.provider';
 import { HttpService } from '@nestjs/axios';
 import { of, throwError } from 'rxjs';
 import { AxiosResponse } from 'axios';
-import { WeatherLogger } from '../logger/weather.logger';
+import { LoggerPort } from '@libs/logger';
 
 describe('OpenWeatherMapProvider', () => {
   const config = {
@@ -28,12 +28,18 @@ describe('OpenWeatherMapProvider', () => {
   } as AxiosResponse;
 
   let httpService: HttpService;
-  let logger: WeatherLogger;
+  let logger: jest.Mocked<LoggerPort>;
   let provider: OpenWeatherMapProvider;
 
   beforeEach(() => {
     httpService = { get: jest.fn().mockReturnValue(of(mockResponse)) } as any;
-    logger = { log: jest.fn() } as any;
+    logger = {
+      info: jest.fn(),
+      debug: jest.fn(),
+      warn: jest.fn(),
+      error: jest.fn(),
+    };
+
     provider = new OpenWeatherMapProvider(httpService, config, logger);
   });
 
@@ -45,9 +51,9 @@ describe('OpenWeatherMapProvider', () => {
       description: 'Hot',
     });
 
-    expect(logger.log).toHaveBeenCalledWith(
-      'openweathermap.org',
-      expect.stringMatching(/Response/),
+    expect(logger.info).toHaveBeenCalledWith(
+      expect.stringMatching(/openweathermap\.org response for Dnipro/),
+      'WeatherProvider',
     );
   });
 
@@ -57,9 +63,10 @@ describe('OpenWeatherMapProvider', () => {
 
     await expect(provider.getWeather(city)).rejects.toThrow('API Error');
 
-    expect(logger.log).toHaveBeenCalledWith(
-      'openweathermap.org',
-      expect.stringMatching(/Error/),
+    expect(logger.error).toHaveBeenCalledWith(
+      expect.stringMatching(/openweathermap\.org failed for Dnipro/),
+      expect.stringMatching(/API Error/),
+      'WeatherProvider',
     );
   });
 });

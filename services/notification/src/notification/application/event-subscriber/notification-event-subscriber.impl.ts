@@ -16,23 +16,24 @@ export class NotificationEventSubscriberImpl
     private readonly service: NotificationService,
   ) {}
 
-  async subscribeToAll(): Promise<void> {
-    await this.bus.subscribe<ConfirmationEmailRequestedEvent>(
+  subscribeToAll(): void {
+    this.bus.subscribe<ConfirmationEmailRequestedEvent>(
       'notification.confirmation-email',
       (event) => this.service.sendConfirmationEmail(event),
     );
 
-    await this.bus.subscribe<SubscriptionConfirmedEvent>(
+    this.bus.subscribe<SubscriptionConfirmedEvent>(
       'notification.subscription-confirmed',
       (event) => this.service.sendSubscriptionConfirmedEmail(event),
     );
 
-    await this.bus.subscribe<UnsubscribedEvent>(
+    this.bus.subscribe<UnsubscribedEvent>(
       'notification.unsubscribed',
+
       (event) => this.service.sendUnsubscribeSuccess(event.email),
     );
 
-    await this.bus.subscribe<WeatherUpdateReadyEvent>(
+    this.bus.subscribe<WeatherUpdateReadyEvent>(
       'notification.weather-update',
       (event) => this.service.sendWeatherUpdate(event),
     );

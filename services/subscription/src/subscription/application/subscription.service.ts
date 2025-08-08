@@ -11,18 +11,29 @@ import { SubscriptionConfirmedEvent } from 'src/libs/kafka/dtos/subscription-con
 import { UnsubscribedEvent } from 'src/libs/kafka/dtos/unsubscribed.event';
 import { WeatherUpdateReadyEvent } from 'src/libs/kafka/dtos/weather-update-ready.event';
 import { SubscriptionEventPublisher } from './event-publisher/subscription-event-publisher.interface';
+import { LoggerPort } from '@libs/logger';
+import { SubscriptionMetricsService } from 'src/metrics/domain/subscription-metrics.service';
 
 @Injectable()
 export class SubscriptionService {
+  private readonly context = 'SubscriptionService';
+
   constructor(
     @Inject('SubscriptionRepository')
     private readonly subscriptionRepository: SubscriptionRepository,
     private readonly publisher: SubscriptionEventPublisher,
     private readonly tokenService: TokenService,
     private readonly weatherService: WeatherGrpcClientService,
+    private readonly logger: LoggerPort,
+    private readonly metrics: SubscriptionMetricsService,
   ) {}
 
   async subscribe(dto: CreateSubscriptionDto): Promise<Subscription> {
+    this.logger.info(
+      `New subscription attempt: ${dto.email} -> ${dto.city} (${dto.frequency})`,
+      this.context,
+    );
+
     const existing = await this.subscriptionRepository.find({
       email: dto.email,
       city: dto.city,
@@ -46,10 +57,21 @@ export class SubscriptionService {
       new ConfirmationEmailRequestedEvent(subscription.email, token.value),
     );
 
+    this.logger.info(
+      `Subscription created, confirmation email event published`,
+      this.context,
+    );
+    this.metrics.incSubscriptionCreated();
+
     return subscription;
   }
 
   async confirm(tokenValue: string): Promise<Subscription> {
+    this.logger.info(
+      `Confirming subscription with token ${tokenValue}`,
+      this.context,
+    );
+
     const token = await this.tokenService.findByValue(tokenValue);
 
     const found = await this.subscriptionRepository.find({ tokenId: token.id });
@@ -79,10 +101,21 @@ export class SubscriptionService {
       ),
     );
 
+    this.logger.info(
+      `Subscription confirmed for ${subscription.email}`,
+      this.context,
+    );
+    this.metrics.incSubscriptionConfirmed();
+
     return subscription;
   }
 
   async unsubscribe(tokenValue: string): Promise<void> {
+    this.logger.info(
+      `Unsubscribe request for token ${tokenValue}`,
+      this.context,
+    );
+
     const token = await this.tokenService.findByValue(tokenValue);
 
     const subscriptions = await this.subscriptionRepository.find({
@@ -100,6 +133,9 @@ export class SubscriptionService {
     this.publisher.publishUnsubscribed(
       new UnsubscribedEvent(subscription.email),
     );
+
+    this.logger.info(`Unsubscribed: ${subscription.email}`, this.context);
+    this.metrics.incSubscriptionCancelled();
   }
 
   async getConfirmedSubscriptionsByFrequency(
@@ -111,6 +147,11 @@ export class SubscriptionService {
   async sendWeatherToSubscribers(
     frequency: SubscriptionFrequencyEnum,
   ): Promise<void> {
+    this.logger.debug(
+      `Sending weather updates to ${frequency} subscribers`,
+      this.context,
+    );
+
     const subscribers =
       await this.getConfirmedSubscriptionsByFrequency(frequency);
 
@@ -132,5 +173,10 @@ export class SubscriptionService {
         console.error(`Failed to send weather to ${sub.email}:`, err);
       }
     }
+
+    this.logger.info(
+      `Weather update events published for ${frequency} subscribers`,
+      this.context,
+    );
   }
 }
