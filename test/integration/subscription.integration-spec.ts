@@ -7,11 +7,11 @@ import { AppModule } from '../../src/app.module';
 import { setupTestApp, teardownTestApp } from './setup-test-app';
 import { SubscriptionRepository } from 'src/subscription/domain/subscription.repository.interface';
 import { TokenRepository } from 'src/token/domain/token.repository.interface';
-import { MailService } from '../../src/mail/application/mail.service';
 import { WeatherService } from 'src/weather/application/weather.service';
 import { SubscriptionNotificationService } from 'src/subscription/application/notification/subscription-notification.service';
 import { Token } from 'src/token/domain/token.domain';
 import { SubscriptionFrequencyEnum } from 'src/common/enums/subscription-frequency.enum';
+import { MailSender } from 'src/mail/domain/mail-sender';
 
 describe('SubscriptionController (Integration)', () => {
   let app: INestApplication;
@@ -42,7 +42,7 @@ describe('SubscriptionController (Integration)', () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
     })
-      .overrideProvider(MailService)
+      .overrideProvider(MailSender)
       .useValue(mockMailService)
       .overrideProvider(SubscriptionNotificationService)
       .useValue(mockNotificationService)

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Weather } from '../domain/weather.model';
 import { WeatherClient } from './weather-client';
-import { MetricsService } from 'src/monitoring/metrics.service';
+import { MetricsService } from 'src/monitoring/domain/metrics.service';
 import { CacheService } from 'src/common/cache/cache.service';
 
 @Injectable()
