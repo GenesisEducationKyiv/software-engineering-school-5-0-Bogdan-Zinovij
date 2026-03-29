@@ -1,126 +1,82 @@
-# 🌤️ Сервіс підписки на прогноз погоди
+# 🌤️ Weather forecast subscription service
 
-Pастосунок дозволяє користувачам підписатися на отримання регулярного прогнозу погоди на електронну пошту для обраного міста. Підтримується щогодинна або щоденна частота оновлень. Також доступна можливість підтвердити або скасувати підписку використовуючи токен.
+Application allows users to subscribe to receive regular weather forecasts by email for a selected city. Hourly or daily update frequency is supported. There is also an option to confirm or cancel the subscription using a token
 
 ---
 
-## Інструкція з розгортання
+## Deployment Instruction
 
-1. Склонувати репозиторій:
+1. Clone the repository:
 
    ```bash
    git clone https://github.com/Bogdan-Zinovij/weather-subscription-service.git
    cd weather-subscription-service
    ```
 
-2. Завантажити `.env` файл з Google Диску та помістити його в кореневу директорію проєкту.  
-   👉 [Завантажити `.env`](https://drive.google.com/file/d/1goJ6jrW1zd5qThr0Y0o7xgsQysHiN6I7/view?usp=sharing)
+2. Download `.env` file from Google Drive and place it in the project's root directory.
+   👉 [Download: `.env`](https://drive.google.com/file/d/1goJ6jrW1zd5qThr0Y0o7xgsQysHiN6I7/view?usp=sharing)
 
-3. Запустити додаток за допомогою Docker Compose:
+3. Run the application using Docker Compose:
 
    ```bash
    docker compose up
    ```
 
-   Додаток буде доступний локально на 3000 порті.
-   URL приклад запиту:
+   The application will be available locally on port 3000.
+   Example request URL:
    http://localhost:3000/weather?city=Kyiv
 
-   - _Примітка_1_: серед логів при піднятті сервісу будуть виводитися і логи запуску міграцій таблиць Tokens, Subscriptions та додавання зв'язку між ними. (Файли міграцій знаходяться в /src/database/migrations)
-   - _Примітка_2_: існуючі контракти апі, що були описані в документації, не змінювалися. Деякі відповіді апі були розширені повідомленням тексту помилки
+   - _Note_1_: Among the logs during service startup, logs for launching migrations of Tokens, Subscriptions tables and adding a relationship between them will also be displayed. (Migration files are located in /src/database/migrations)
+   - _Note_2_: Existing API contracts described in the documentation have not changed. Some API responses have been expanded with an error message text.
 
 ---
 
-## Деплой
+## Deployment
 
-Застосунок задеплоєно на AWS EC2. Тут розміщено апі та html-сторінка для підписки за посиланням:
+The application has been deployed on AWS EC2. The API and the HTML page for subscription via link are hosted here:
 🔗 [http://ec2-54-67-118-137.us-west-1.compute.amazonaws.com](http://ec2-54-67-118-137.us-west-1.compute.amazonaws.com)
 
 ---
 
-## Використані технології та сервіси
+## Technologies and Services Used
 
-Технології:
+Technologies:
 
-- **NestJS** — фреймворк з модульною архітектурою для Node.js
-- **TypeScript** — як основна мова програмування зі строгою типізацією
-- **PostgreSQL** — реляційна база даних для збереження даних додатку
-- **TypeORM** — ORM для спрощеної роботи з базою даних
-- **Docker / Docker Compose** — для контейнеризації та локального запуску
-- **@nestjs-modules/mailer** — для надсилання email повідомлень
-- **AWS EC2** — хостинг додатку
+- **NestJS** — a framework with a modular architecture for Node.js
+- **TypeScript** — as the primary programming language with strict typing
+- **PostgreSQL** — a relational database for storing application data
+- **TypeORM** — an ORM for simplified database interaction
+- **Docker / Docker Compose** — for containerization and local deployment
+- **@nestjs-modules/mailer** — for sending email notifications
+- **AWS EC2** — application hosting
 
-Сторонні сервіси:
+Third-party Services:
 
-- **WeatherAPI.com** — зовнішнє джерело даних про погоду
-- **SendPulse.com** — SMTP сервер для надсилання email-повідомлень
-
----
-
-## Архітектура
-
-Застосунок побудований на принципах **Clean Architecture**, що забезпечує масштабованість, зручність тестування та чисту бізнес-логіку.
-
-- **Доменні моделі** (`Subscription`, `Weather`) ізольовані від інфраструктурної реалізації. Вони використовуються виключно в бізнес-логіці.
-- **Мапінг** між доменними моделями та ORM-ентіті в репозиторіях (`SubscriptionEntity`, `TokenEntity`) реалізовано окремо, щоб не змішувати бізнес-логіку з технічними деталями БД. В сервісі всі операції виконуються лише з доменними моделями.
-- **Інтерфейси репозиторіїв** описують поведінку доступу до даних, а конкретна реалізація (на базі TypeORM) інкапсульована всередині інфраструктурного шару.
-- Код поділений на шари:
-  - `application` — бізнес-логіка, сервіси
-  - `infrastructure` — доступ до БД (ентіті, репозиторії), сторонні API
-  - `interfaces` — контролери, вхідні/вихідні порти
-- Модульність - в основі кожного модуля інкапсулюється окрема доменна модель (або окремий сервіс) та пов'язана з нею логіка. Спільні константи та інтерфейси винесені в папку `common`.
+- **WeatherAPI.com** — an external source for weather data
+- **SendPulse.com** — an SMTP server for sending email messages
 
 ---
 
-## Взаємодія модулів
+## Architecture
 
-- Користувач відправляє **POST /subscribe** з email, містом та періодом оновлень.
+The application is built on the principles of **Clean Architecture**, ensuring scalability, testability, and clean business logic.
 
-  - `SubscriptionService` створює підписку, викликаючи репозиторій та `TokenService` для генерації токена.
-  - Email з токеном надсилається через `MailerService`.
-
-- Користувач переходить по **GET /confirm/{token}**:
-
-  - `TokenService` перевіряє валідність токена, підписка підтверджується.
-
-- Через **GET /unsubscribe/{token}** — аналогічно, відбувається відписка.
-
-- Після кожного успішного запиту в ендпоінті `/subscription` викликається `MailService` для надсилання повідомлення для підтвердження підписки, про успішне оформлення підписки, оновлення погоди та скасування підписки.
-
-- Кожну годину або кожен день опівдні запускаються **cron-задачі**, які:
-
-  - Отримують всі підтверджені підписки з необхідною частотою
-  - Для кожного унікального міста з підписок кешують погоду з WeatherAPI.com
-  - Розсилають прогнози по email через SMTP сервер
+- **Domain models** (`Subscription`, `Weather`) are isolated from infrastructure implementation. They are used exclusively within the business logic.
+- **Mapping** between domain models and ORM entities in repositories (`SubscriptionEntity`, `TokenEntity`) is implemented separately to avoid mixing business logic with database technical details. In the service layer, all operations are performed only with domain models.
+- **Repository interfaces** define data access behavior, while the concrete implementation (based on TypeORM) is encapsulated within the infrastructure layer.
+- The code is divided into layers:
+  - `application` — business logic, services
+  - `infrastructure` — database access (entities, repositories), third-party APIs
+  - `interfaces` — controllers, input/output ports
+- Modularity — each module encapsulates a distinct domain model (or service) and its associated logic. Common constants and interfaces are placed in the `common` folder.
 
 ---
 
-## Демонстрація алгоритму проходження всіх успішних кейсів додатку
+## Module Interaction
 
-- HTML сторінка додатку роздається як статика, знаходиться за маршрутом `/`:
+- A user sends a **POST /subscribe** request with their email, city, and update interval.
 
-![html-page](assets/images/1.png)
-
-- На сторінці можна переглянути погоду для міста та підписатися на розсилку. Після підписки на розсилку з'являється текст з вказівкою переглянути поштову скриньку:
-
-![subscription-form](assets/images/2.png)
-
-- На пошту приходить лист з токеном для підтвердження реєстрації. Можна скористатися посиланням, яке відправляє GET запит на `/subscriptions/confirm/${token}`.
-
-![confirmation](assets/images/3.png)
-
-- Після цього на пошту приходить лист про успішне підтвердження підписки та поточною погодою у підписаному місті
-
-![successful-confirmation](assets/images/4.png)
-
-- Далі, в залежності від вибраної періодичності раз в годину о хх:00 або ж раз на добу о 12:00 AM будуть приходити повідомлення зі станом погоди, якщо підписка підтверджена.
-
-![weather-update](assets/images/5.png)
-
-- У кожному повідомленні з оновленням погоди прикріплюється лінк, що відправляє GET запит на `/subscriptions/confirm/${token}`, яким можна скористатися щоб скасувати підписку. Для цього використовується той самий токен, що був надісланий користувачу під час його реєстрації
-
-![unsubscribe](assets/images/6.png)
-
-- Після скасування підписки, об'єкт підписки та токена видаляється з бази даних, і користувач знову може оформити нову підписку. Невалідні запити або неуспішні кейси повертають статус помилки згідно документації, а також повідомлення про тип помилки.
+  - `SubscriptionService` creates the subscription by calling the repository and `TokenService` to generate a token.
+  - An email with the token is sent via `MailerService`.
 
 ---
