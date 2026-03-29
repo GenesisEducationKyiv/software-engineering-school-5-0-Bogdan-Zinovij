@@ -1,0 +1,58 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [notification, weather, subscription]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-npm-${{ matrix.service }}-${{ hashFiles(format('services/{0}/package-lock.json', matrix.service)) }}
+          restore-keys: |
+            ${{ runner.os }}-npm-${{ matrix.service }}-
+
+      - name: Install and build libs/logger
+        working-directory: libs/logger
+        run: |
+          npm install
+          npm run build
+
+      - name: Prepare libs/kafka and libs/grpc
+        run: |
+          mkdir -p services/${{ matrix.service }}/src/libs
+          cp -r libs/kafka services/${{ matrix.service }}/src/libs/kafka
+          cp -r libs/grpc services/${{ matrix.service }}/src/libs/grpc
+
+      - name: Install dependencies
+        working-directory: services/${{ matrix.service }}
+        run: npm install
+
+      - name: Build service
+        working-directory: services/${{ matrix.service }}
+        run: npm run build
+
+      - name: Run linter
+        working-directory: services/${{ matrix.service }}
+        run: npm run lint
+
+      - name: Run unit tests
+        working-directory: services/${{ matrix.service }}
+        run: npm run test
