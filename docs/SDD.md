@@ -1,37 +1,51 @@
-# 1. Вступ та огляд
+# 1. Introduction and Overview
 
-## Призначення
 
-Сервіс дозволяє користувачам підписатися на отримання погодних сповіщень на email для конкретного міста з обраною частотою (hourly, daily). Додаток автоматично надсилає погодні оновлення відповідно до підписки.
+## Purpose
 
-## Контекст
 
-Сервіс обробляє підписку, підтвердження, відписку та розсилку погоди.
-Обмеження:
+The service allows users to subscribe to receive weather notifications via email for a specific city with a chosen frequency (hourly, daily). The application automatically sends weather updates according to the subscription.
 
-- Немає авторизації (public API)
-- Немає збереження історії погодних даних
 
-## Переваги
+## Context
 
-- Автоматична розсилка без потреби в додатку
-- Просте REST API
-- Розширюваність через Clean Architecture
+
+The service handles subscription, confirmation, unsubscription, and weather distribution.
+Limitations:
+
+
+- No authorization (public API)
+- No storage of weather data history
+
+
+## Benefits
+
+
+- Automatic distribution without the need for an application
+- Simple REST API
+- Extensibility through Clean Architecture
+
 
 ---
 
-# 2. Функціональні вимоги
+
+# 2. Functional Requirements
+
 
 ## API Endpoints
 
-- `POST /subscription/subscribe` — створити підписку
-- `GET /subscription/confirm/{token}` — підтвердити підписку
-- `GET /subscription/unsubscribe/{token}` — скасувати підписку
-- `GET /weather?city={city}` — отримати поточну погоду
 
-## Модель даних
+- `POST /subscription/subscribe` — create a subscription
+- `GET /subscription/confirm/{token}` — confirm subscription
+- `GET /subscription/unsubscribe/{token}` — cancel subscription
+- `GET /weather?city={city}` — get current weather
+
+
+## Data Model
+
 
 ### Subscription Request:
+
 
 ```json
 {
@@ -41,7 +55,9 @@
 }
 ```
 
+
 ### Weather Response:
+
 
 ```json
 {
@@ -51,47 +67,50 @@
 }
 ```
 
-## Use-cases використання API
 
-- Підписка: перевірка дубліката підписки -> створення -> надсилання email для підтвердження
-- Підтвердження: знайти токен підтвердження -> оновити статус підписки на підтверджений -> надсилання email про успішне підтвердження
-- Відписка: знайти токен -> видалити підписку та токен -> надсилання email про успішну відписку
-- Розсилка погоди: з обраною періодичністю запит погоди до API / кешу -> надсилання email розсилки всім підтвердженим підпискам
+## API Use Cases
 
----
 
-# 3. Нефункціональні вимоги
+- Subscription: check for duplicate subscription -> creation -> send email for confirmation
+- Confirmation: find confirmation token -> update subscription status to confirmed -> send email about successful confirmation
+- Unsubscription: find token -> delete subscription and token -> send email about successful unsubscription
+- Weather Distribution: at the chosen frequency, request weather from API / cache -> send email distribution to all confirmed subscriptions
 
-## Продуктивність
-
-- `/weather` відповідає до 300 мс
-
-## Масштабованість
-
-- Підтримка 50k+ підписок завдяки CRON-розсилці та кешу погоди
-- Кешування погоди для унікальних міст обмежує зовнішні запити
-
-## Безпека
-
-- Валідація вхідних даних через `class-validator`
-- Верифікація UUID токенів
-- Відсутність авторизації (публічні маршрути)
-
-## Обробка помилок
-
-- 400 Bad Request — невалідний запит або токен
-- 404 Not Found — підписка/токен не знайдені
-- 409 Conflict — дубльована підписка
 
 ---
 
-# 4. Архітектура системи
+# 3. Non-functional Requirements
 
-## Діаграма архітектури системи
+## Performance
+
+- `/weather` responds within 300 ms
+
+## Scalability
+
+- Supports 50k+ subscriptions through CRON dispatch and weather caching
+- Weather caching for unique cities limits external requests
+
+## Security
+
+- Input data validation via `class-validator`
+- Token UUID verification
+- No authorization (public routes)
+
+## Error Handling
+
+- 400 Bad Request - invalid request or token
+- 404 Not Found - subscription/token not found
+- 409 Conflict - duplicate subscription
+
+---
+
+# 4. System Architecture
+
+## System Architecture Diagram
 
 ![sdd-schema](./assets/images/arch.png)
 
-## Стек технологій
+## Technology Stack
 
 - NestJS (TypeScript)
 - PostgreSQL + TypeORM
@@ -99,7 +118,7 @@
 - SMTP: SendPulse
 - Weather API: weatherapi.com
 
-## Патерни проектування
+## Design Patterns
 
 - Clean Architecture
 - Dependency Injection
@@ -109,230 +128,249 @@
 
 ---
 
-# 5. Обрані технології та обгрунтування
+# 5. Chosen Technologies and Justification
 
-### NestJS (Node.js + TypeScript)
+  - Prisma — less flexible in customization.
+  - MongoDB — not suitable due to relational database schema.
 
-- **Причина вибору**: Вбудована підтримка модульності, Dependency Injection, Pipes, Middleware, Guards. Дає змогу легко реалізувати Clean Architecture, окремі модулі та шари.
-- **Альтернатива**: ExpressJS, Fastify.
-- **Чому відмовились**:
-  - Express — потребує багато ручної структури, слабка підтримка DI.
-  - Fastify — швидший, але уставлена екосистема NestJS підходить краще.
 
-### TypeORM + PostgreSQL
+### WeatherAPI.com and OpenWeatherMap
 
-- **Причина вибору**: підтримка migrations, entity-based моделювання.
-- **Альтернатива**: Prisma, MongoDB.
-- **Чому відмовились**:
-  - Prisma — менш гнучка у кастомізації.
-  - MongoDB — не підходить, бо реляційна схема бд.
 
-### WeatherAPI.com та OpenWeatherMap
+- **Reason for choice**: free tier, intuitive REST API, minimal configuration, popularity
 
-- **Причина вибору**: безкоштовний тариф, зрозуміле REST API, мінімум налаштувань, популярність
 
 ### @nestjs-modules/mailer + SMTP (SendPulse)
 
-- **Причина вибору**: просте підключення SMTP, повна інтеграція в NestJS, можливість задавати шаблони листів.
-- **Альтернатива**: nodemailer напряму, SendGrid API.
-- **Чому відмовились**:
-  - Nodemailer потребує ручного налаштування, немає DI-модуля.
-  - SendGrid вимагає додаткових SDK/API ключів, платний тариф.
+
+- **Reason for choice**: simple SMTP connection, full integration into NestJS, ability to define email templates.
+- **Alternative**: nodemailer directly, SendGrid API.
+- **Why rejected**:
+  - Nodemailer requires manual configuration, no DI module.
+  - SendGrid requires additional SDK/API keys, paid tier.
+
 
 ### Docker + Docker Compose
 
-- **Причина вибору**: швидкий старт, можливість запускати всі сервіси локально та в продакшені з однаковими налаштуваннями.
-- **Альтернатива**: k8s.
-- **Чому відмовились**:
-  - k8s — складніше налаштувати + це не потрібно для MVP.
+
+- **Reason for choice**: quick start, ability to run all services locally and in production with the same configuration.
+- **Alternative**: k8s.
+- **Why rejected**:
+  - k8s — more complex to configure + not needed for MVP.
+
 
 ### Redis
 
-- **Причина вибору**: швидке in-memory кешування з TTL, підтримка ключ-значення, підходить для кешування погодних даних.
-- **Альтернатива**: in-memory кеш вручну, Memcached.
-- **Чому відмовились**:
-  - Memcached — не підтримує складні структури та TTL на рівні запису.
-  - In-memory — втрачається після рестарту, не підходить для розподіленого середовища. Використано в юніт тестах щоб не піднімати Redis.
+
+- **Reason for choice**: fast in-memory caching with TTL, key-value support, suitable for caching weather data.
+- **Alternative**: in-memory cache manually, Memcached.
+- **Why rejected**:
+  - Memcached — does not support complex structures and TTL at the record level.
+  - In-memory — lost after restart, not suitable for distributed environments. Used in unit tests to avoid starting Redis.
+
 
 ### Prometheus
 
-- **Причина вибору**: зручний збір метрик з NestJS застосунку, інструменти для спостереження.
-- **Альтернатива**: StatsD.
-- **Чому відмовились**:
-  - Потребує проміжного сервера.
+
+- **Reason for choice**: convenient collection of metrics from NestJS application, observability tools.
+- **Alternative**: StatsD.
+- **Why rejected**:
+  - Requires an intermediate server.
+
 
 ---
 
-# 6. Компоненти системи
+
+# 6. System Components
+
 
 ### 1. `WeatherModule`
 
-- **Призначення**: отримання актуальних погодних даних через зовнішній API.
-- **Склад**:
-  - `WeatherService` — основна логіка отримання погоди, кешування, метрики.
+
+- **Purpose**: obtaining current weather data through an external API.
+- **Components**:
+  - `WeatherService` — main logic for weather retrieval, caching, metrics.
   - `WeatherController` — HTTP API.
-  - `WeatherClient` — делегує запит ланцюжку провайдерів.
-  - `WeatherProviderChain` — fallback-механізм між кількома провайдерами.
-  - `OpenWeatherMapProvider`, `WeatherApiProvider` — окремі реалізації отримання погоди.
-- **Взаємодія**:
-  - Викликається з `SubscriptionService` для розсилки.
-  - Кешує відповіді в Redis.
-  - Записує метрики hit/miss.
+  - `WeatherClient` — delegates the request to a chain of providers.
+  - `WeatherProviderChain` — fallback mechanism between multiple providers.
+  - `OpenWeatherMapProvider`, `WeatherApiProvider` — separate implementations for obtaining weather.
+- **Interaction**:
+  - Called by `SubscriptionService` for sending out notifications.
+  - Caches responses in Redis.
+  - Records hit/miss metrics.
+
 
 ---
 
 ### 2. `SubscriptionModule`
 
-- **Призначення**: управління підписками - створення, підтвердження, видалення, розсилка.
-- **Склад**:
-  - `SubscriptionService` — бізнес-логіка.
-  - `SubscriptionController` — API маршрути.
-  - `SubscriptionCronService` — CRON-розсилка.
-  - `TypeOrmSubscriptionRepository` — реалізація доступу до БД.
-  - `SubscriptionEntity` — ORM-таблиця.
-- **Взаємодія**:
-  - Залежить від `TokenService`, `WeatherService`, `MailService`.
-  - Кожну годину/день формує email з прогнозом погоди.
-
----
-
-### 3. `TokenModule`
-
-- **Призначення**: створення та управління токенами для підтвердження та скасування підписки.
-- **Склад**:
   - `TokenService`
   - `TypeOrmTokenRepository`
   - `TokenEntity`
-- **Взаємодія**: використовується під час створення, підтвердження та видалення підписки у модулі підписок.
+- **Interaction**: used during subscription creation, confirmation, and deletion in the subscriptions module.
+
 
 ---
+
 
 ### 4. `MailModule`
 
-- **Призначення**: надсилання email листів.
-- **Склад**: `MailService`, конфігурація SMTP, шаблони в `mail.templates.ts`.
-- **Взаємодія**:
-  - `SubscriptionService` надсилає підтвердження, відписку та оновлення через `MailService`.
+
+- **Purpose**: sending emails.
+- **Components**: `MailService`, SMTP configuration, templates in `mail.templates.ts`.
+- **Interaction**:
+  - `SubscriptionService` sends confirmations, unsubscriptions, and updates via `MailService`.
+
 
 ---
+
 
 ### 5. `DatabaseModule`
 
-- **Призначення**: централізоване налаштування підключення до бази даних.
-- **Взаємодія**: використовується модулями Subscription, Token.
+
+- **Purpose**: centralized database connection setup.
+- **Interaction**: used by Subscription, Token modules.
+
 
 ---
+
 
 ### 6. CRON Jobs
 
-- **Реалізація**: клас `SubscriptionCronService` в `SubscriptionModule`
-- **Призначення**: періодична відправка листів залежно від частоти підписки
-- **Використовує**: метод `.sendWeatherToSubscribers(frequency)` у сервісі підписок
+
+- **Implementation**: `SubscriptionCronService` class in `SubscriptionModule`
+- **Purpose**: periodic sending of emails based on subscription frequency
+- **Uses**: `.sendWeatherToSubscribers(frequency)` method in the subscriptions service
+
 
 ---
+
 
 ### 7. `CacheModule`
 
-- **Призначення**: кешування погодних даних (та потенційно інших даних у майбутньому).
-- **Склад**:
-  - `CacheService` — абстрактний інтерфейс кешування.
-  - `RedisCacheService` — основна продакшн-реалізація.
-  - `InMemoryCacheService` — використовує in-memory Map, застосовується в юніт тестах.
-- **Взаємодія**:
-  - Використовується `WeatherService` для зменшення навантаження на зовнішні API.
+
+- **Purpose**: caching weather data (and potentially other data in the future).
+- **Components**:
+  - `CacheService` — abstract caching interface.
+  - `RedisCacheService` — main production implementation.
+  - `InMemoryCacheService` — uses an in-memory Map, applied in unit tests.
+- **Interaction**:
+  - `WeatherService` uses it to reduce load on external APIs.
+
 
 ---
+
 
 ### 8. `MetricsModule`
 
-- **Призначення**: експортування метрик до Prometheus.
-- **Склад**:
-  - `MetricsService` — інкрементування метрик (`weather_cache_hit`, `weather_cache_miss`).
-- **Взаємодія**:
-  - Використовується в `WeatherService` для реєстрації статистики кешу.
+
+- **Purpose**: exporting metrics to Prometheus.
+- **Components**:
+  - `MetricsService` — incrementing metrics (`weather_cache_hit`, `weather_cache_miss`).
+- **Interaction**:
+  - Used in `WeatherService` to log cache statistics.
+
 
 ---
 
-# 7. Структура бази даних
+# 7. Database Structure
 
-Сутності бази даних та зв'язки між ними створюються через міграції. Перелік таблиць:
+Database entities and their relationships are created through migrations. Table listing:
 
-### Таблиця: `tokens`
+### Table: `tokens`
 
-| Назва поля | Тип     | Опис                               |
-| ---------- | ------- | ---------------------------------- |
-| id         | UUID    | Первинний ключ                     |
-| value      | VARCHAR | UUID токен, використовується в URL |
-
----
-
-### Таблиця: `subscriptions`
-
-| Назва поля | Тип                      | Опис                                              |
-| ---------- | ------------------------ | ------------------------------------------------- |
-| id         | UUID                     | Первинний ключ                                    |
-| email      | VARCHAR                  | Email користувача                                 |
-| city       | VARCHAR                  | Назва міста                                       |
-| frequency  | ENUM ('hourly', 'daily') | Частота розсилки                                  |
-| confirmed  | BOOLEAN                  | `false` при створенні, `true` після підтвердження |
-| tokenId    | UUID (FK -> tokens.id)   | Посилання на токен, 1:1 зв’язок                   |
-
-### Зв'язок:
-
-- `tokens` має зв'язок 1:1 з `subscriptions` через поле `tokenId`
+| Field Name | Type    | Description                   |
+| ---------- | ------- | ----------------------------- |
+| id         | UUID    | Primary key                   |
+| value      | VARCHAR | UUID token, used in URL       |
 
 ---
 
-# 8. Взаємодія компонентів
+### Table: `subscriptions`
+
+| Field Name | Type                      | Description                                   |
+| ---------- | ------------------------ | --------------------------------------------- |
+| id         | UUID                     | Primary key                                   |
+| email      | VARCHAR                  | User's email                                  |
+| city       | VARCHAR                  | City name                                     |
+| frequency  | ENUM ('hourly', 'daily') | Mailing frequency                             |
+| confirmed  | BOOLEAN                  | `false` on creation, `true` after confirmation |
+| tokenId    | UUID (FK -> tokens.id)   | Reference to the token, 1:1 relationship       |
+
+### Relationship:
+- `tokens` has a 1:1 relationship with `subscriptions` through the `tokenId` field.
+
+
+---
+
+
+# 8. Component Interaction
+
 
 ### `SubscriptionController`
 
-- Приймає HTTP-запити на `/subscribe`, `/confirm/:token`, `/unsubscribe/:token`
-- Делегує всі дії в `SubscriptionService`
+
+- Accepts HTTP requests to `/subscribe`, `/confirm/:token`, `/unsubscribe/:token`
+- Delegates all actions to `SubscriptionService`
+
 
 ### `SubscriptionService`
 
-- Створює токен через `TokenService`
-- Зберігає підписку через `SubscriptionRepository`
-- Надсилає листи через `MailService`
-- Отримує погоду через `WeatherService`
-- Запускає CRON-задачі для періодичних email-розсилок
+
+- Creates a token via `TokenService`
+- Saves the subscription via `SubscriptionRepository`
+- Sends emails via `MailService`
+- Retrieves weather via `WeatherService`
+- Starts CRON jobs for periodic email newsletters
+
 
 ### `WeatherService`
 
-- Отримує погоду через `WeatherClient`, який реалізує патерн **Chain of Responsibility**
-- Кешує дані в Redis через `CacheService`
-- Інкрементує метрики (`cache_hit`, `cache_miss`) через `MetricsService` (Prometheus)
-- Взаємодіє з провайдерами (`OpenWeatherMap`, `WeatherAPI`) через `WeatherClient`
+
+- Retrieves weather via `WeatherClient`, which implements the **Chain of Responsibility** pattern
+- Caches data in Redis via `CacheService`
+- Increments metrics (`cache_hit`, `cache_miss`) via `MetricsService` (Prometheus)
+- Interacts with providers (`OpenWeatherMap`, `WeatherAPI`) via `WeatherClient`
+
 
 ### `WeatherClient`
 
-- Інкапсулює логіку вибору провайдера через `WeatherProviderChain`
-- Делегує виклик погодного API ланцюгу провайдерів
+
+- Encapsulates provider selection logic via `WeatherProviderChain`
+- Delegates weather API calls to the provider chain
+
 
 ### `WeatherProviderChain`
 
-- Послідовно пробує доступних провайдерів, поки не отримає валідну відповідь
-- Реалізує fallback-логіку (Chain of Responsibility)
+
+- Sequentially tries available providers until a valid response is received
+- Implements fallback logic (Chain of Responsibility)
+
 
 ### `MailService`
 
-- Відправляє email на основі шаблонів підтвердження підписки, оновлення погоди або повідомлення про відписку
+
+- Sends emails based on templates for subscription confirmation, weather updates, or unsubscribe notifications
+
 
 ### `TokenService`
 
-- Генерує UUID токени
-- Шукає токени по `id` або `value`
-- Видаляє токени при відписці
 
-# 9. Контракти АПІ
+- Generates UUID tokens
+- Searches for tokens by `id` or `value`
+- Deletes tokens upon unsubscription
+
+
+# 9. API Contracts
+
 
 ## 1. POST /subscription/subscribe
 
-**Description:** Створення нової підписки на оновлення погоди.
+
+**Description:** Creates a new subscription for weather updates.
+
 
 ### Request
-
 ```
 POST /subscription/subscribe
 Content-Type: application/json
@@ -346,9 +384,9 @@ Content-Type: application/json
 
 ### Validation
 
-- `email`: валідний email
-- `city`: непорожній рядок, до 100 символів
-- `frequency`: одне з `hourly` або `daily`
+- `email`: valid email
+- `city`: non-empty string, up to 100 characters
+- `frequency`: one of `hourly` or `daily`
 
 ### Responses
 
@@ -380,7 +418,7 @@ Content-Type: application/json
 
 ## 2. GET /subscription/confirm/{token}
 
-**Description:** Підтвердження створеної підписки.
+**Description:** Confirmation of the created subscription.
 
 ### Path Parameter
 
@@ -416,7 +454,7 @@ Content-Type: application/json
 
 ## 3. GET /subscription/unsubscribe/{token}
 
-**Description:** Скасування підписки за токеном.
+**Description:** Unsubscribe by token.
 
 ### Path Parameter
 
@@ -452,7 +490,7 @@ Content-Type: application/json
 
 ## 4. GET /weather
 
-**Description:** Отримання поточної погоди для обраного міста.
+**Description:** Getting current weather for the selected city.
 
 ### Query Parameters
 
@@ -490,64 +528,85 @@ Content-Type: application/json
 
 ---
 
-# 10. Перевірка функціональності
+# 10. Functionality Testing
 
-#### 1. Юніт-тести
 
-- Тестування сервісів `SubscriptionService` і `WeatherService`
-- Моки: `WeatherRepository`, `SubscriptionRepository`, `MailerService`, `HttpService`
-- Покривається логіка:
+#### 1. Unit Tests
 
-  - успішні кейси виконання;
-  - генерація токену;
-  - відмова при дублюванні підписки;
-  - надсилання листів.
 
-#### 2. Інтеграційні тести (ручні)
+- Testing of `SubscriptionService` and `WeatherService` services
+- Mocks: `WeatherRepository`, `SubscriptionRepository`, `MailerService`, `HttpService`
+- Covered logic:
 
-- Всі API тестуються через Postman:
 
-  - `POST /subscription/subscribe` — очікується 200 або 409;
-  - `GET /subscription/confirm/:token` — підтвердження в БД;
-  - `GET /subscription/unsubscribe/:token` — запис видаляється;
-  - `GET /weather?city=Lviv` — отримується кешована або нова погода.
+  - successful execution cases;
+  - token generation;
+  - refusal upon duplicate subscription;
+  - sending emails.
+
+
+#### 2. Integration Tests (Manual)
+
+
+- All APIs are tested via Postman:
+
+
+  - `POST /subscription/subscribe` — expected 200 or 409;
+  - `GET /subscription/confirm/:token` — confirmation in the DB;
+  - `GET /subscription/unsubscribe/:token` — record is deleted;
+  - `GET /weather?city=Lviv` — cached or new weather is retrieved.
+
 
 #### 3. Swagger UI
 
-- Всі маршрути підняті з документацією `@nestjs/swagger`
-- У Swagger можна перевірити валідацію DTO, помилки 400, 409, 404
+
+- All routes are exposed with documentation via `@nestjs/swagger`
+- In Swagger, you can check DTO validation, 400, 409, 404 errors
+
 
 ---
 
-# 11. Можливі покращення
+# 11. Possible Improvements
 
-## 1. Додавання Load Balancer для масштабування
 
-У разі росту трафіку, доцільно буде використати балансувальник навантаження (NGINX або AWS ALB). Переваги:
+## 1. Adding a Load Balancer for Scaling
 
-- можна розподілити навантаження на кілька інстансів
-- покращиться fault tolerance
-- буде зменшено час відповіді при пікових навантаженнях
 
-## 2. Перенесення email-розсилок у чергу через BullMQ або RabbitMQ
+In case of traffic growth, it would be advisable to use a load balancer (NGINX or AWS ALB). Benefits:
 
-На ранньому етапі прокту email надсилаються синхронно, що затримує відповіді. Використання черги дозволить:
 
-- розділити процес формування відповіді API та відправку листа
-- масштабувати email-воркери окремо від основного додатку
-- зменшить ризик помилок під час розсилки
+- load can be distributed across multiple instances
+- fault tolerance will improve
+- response time during peak loads will be reduced
 
----
 
-## Рев’ю
+## 2. Moving email distribution to a queue via BullMQ or RabbitMQ
 
-- [x] Богдан Зіновий
-- [ ] Микола
-- [ ] Богдан
-- [ ] Іван
+
+At an early stage of the project, emails are sent synchronously, which delays responses. Using a queue will allow:
+
+
+- separation of the API response generation process and email sending
+- scaling email workers independently from the main application
+- reducing the risk of errors during distribution
+
 
 ---
 
-## Дедлайн
 
-Дедлайн для узгодження та фіналізації дизайн-документа: 10:00 09/06/2025
+## Review
+
+
+- [x] Bohdan Zinovyi
+- [ ] Mykola
+- [ ] Bohdan
+- [ ] Ivan
+
+
+---
+
+
+## Deadline
+
+
+Deadline for approval and finalization of the design document: 10:00 09/06/2025
